@@ -24,6 +24,19 @@ Registry of every tracked asset. Entry point: `AGENT.md`. Design: `docs/ARCHITEC
 | `/resume` | Orient at session start: load the operating context + recent session logs. |
 | `/compress` | Save the session as a structured, searchable log. |
 | `/preserve` | Route a durable decision/learning to the right long-term home. |
+| `/goal` | Run a task under a Goal Contract (+ Loop Spec if it loops); stops wired to the usage proxy. See `docs/goal-loop-engineering.md`. |
+
+## Skills (`skills/`) — hand-authored cognitive techniques
+
+Auto-invoked by their `description`. Adapted from Compound AI Operating Standards (CC BY 4.0).
+
+| Skill | Use when |
+|---|---|
+| `parallel-lens-synthesis` | A decision is high-stakes/contested; stress-test before committing. |
+| `consequence-simulation` | Before an irreversible / wide-blast-radius change (premortem + 2nd-order effects). |
+| `detached-judgment` | Countering sycophancy/anchoring; evidence is thin but the pull to validate is strong. |
+| `pressure-test` | Validating a finding/plan/design across fixed adversarial lenses before acting. |
+| `nod-protocol` | "Negate Own Default" — stress a fast, confident conclusion before locking it in. |
 
 ## Workflows (`workflows/`)
 
@@ -39,5 +52,7 @@ Registry of every tracked asset. Entry point: `AGENT.md`. Design: `docs/ARCHITEC
 
 ## Not included here
 
-Vendored/managed skills (installed via the plugin system, overwritten on update) are
-**referenced, not vendored** — see `README.md` → "Installed skills (external)".
+The hand-authored cognitive skills above **are** included. Only the **vendored/managed** skills
+(installed via the plugin system, overwritten on update — e.g. `efficient-fable`, `quick-recap`,
+`stay-within-limits`, `visual-plan`, `visual-recap`) are referenced, not vendored — see
+`README.md` → "Skills".

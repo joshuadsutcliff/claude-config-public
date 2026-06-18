@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 17,
-  "aggregate_sha256": "8659e8dd85e57b0f384b781a9862749293aeeef673bb91a1d38414553a93b3bf",
+  "file_count": 24,
+  "aggregate_sha256": "904edeeaa4d0634cf65bf9bec41b1ed801fea6a85893513e619d776327ce5d25",
   "files": [
     {
       "path": ".gitignore",
@@ -16,13 +16,13 @@
     },
     {
       "path": "README.md",
-      "sha256": "e99b5bc09ca7ddd8aa6f99debb209d37afc0e106a05942d1723ca446cbfc3f0c",
-      "bytes": 3849
+      "sha256": "6e90cddc6f10b4fc4699950e08971456cf0fd2be3a89ba787c877b475a05f63b",
+      "bytes": 4260
     },
     {
       "path": "_index.md",
-      "sha256": "04d60ec191744d602530f313375ba2b7f0fc5b39a35d50f30cc7eeabe07194d9",
-      "bytes": 1963
+      "sha256": "3677f9ec2ef0644e62b2d793b8283684c67c56b73ed2dc5964972b1878901c96",
+      "bytes": 2970
     },
     {
       "path": "agents/code-generator.md",
@@ -45,6 +45,11 @@
       "bytes": 3510
     },
     {
+      "path": "commands/goal.md",
+      "sha256": "4cf48be6d28cf0c4fa3508ef9d59d6e3dbe6265c0c8f7a2839e0ea1f722b624a",
+      "bytes": 2106
+    },
+    {
       "path": "commands/preserve.md",
       "sha256": "97345547fbf263d281f535815aaf3499f63786e82995b1125df503dc51155255",
       "bytes": 2963
@@ -58,6 +63,11 @@
       "path": "docs/ARCHITECTURE.md",
       "sha256": "321d4ff76c53735b7862f515a2fcda5ad51797231e762eb97aaa4b8af850c59d",
       "bytes": 3431
+    },
+    {
+      "path": "docs/goal-loop-engineering.md",
+      "sha256": "e118d215c60e67079bd0bde30dbba08024ac945426a9cd0f8f322a7c714b7148",
+      "bytes": 3248
     },
     {
       "path": "hooks/session-router.sh",
@@ -83,6 +93,31 @@
       "path": "settings.example.json",
       "sha256": "cfe612fa496ac6b15ad9ac5954d566ac9c7af0024167ecab8af49cc586d19fce",
       "bytes": 824
+    },
+    {
+      "path": "skills/consequence-simulation/SKILL.md",
+      "sha256": "d27851af277912e8103202b15cdbf9a230a639809b5b6604c3d73634073647e5",
+      "bytes": 1936
+    },
+    {
+      "path": "skills/detached-judgment/SKILL.md",
+      "sha256": "99938563fdcb810d1909921d1f54758ae3f9ccfca8a587b376eaae6989694c26",
+      "bytes": 2103
+    },
+    {
+      "path": "skills/nod-protocol/SKILL.md",
+      "sha256": "32e7bad48b56b9b100017283dca9f36809189563ac37547324c9db8684be98ad",
+      "bytes": 2130
+    },
+    {
+      "path": "skills/parallel-lens-synthesis/SKILL.md",
+      "sha256": "f1d30994dd7759ae41fcbe2b6cfc5e9e8a7e7718758f73e38f6fe1818c8b0048",
+      "bytes": 1858
+    },
+    {
+      "path": "skills/pressure-test/SKILL.md",
+      "sha256": "7dc7b450d0c27fe13b5931ebb1960fdb2b2a3c7a6c900f30eb6a4452bfeb5830",
+      "bytes": 2085
     },
     {
       "path": "workflows/phased-review.js",

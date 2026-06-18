@@ -23,15 +23,19 @@ Start with **`AGENT.md`** (the operating contract), then **`_index.md`** (asset 
 | `_index.md` | Registry of every tracked asset. |
 | `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router). The enforcement layer. |
 | `agents/` | Named delegation workers: `researcher`, `code-generator`, `tester`. |
-| `commands/` | Slash commands: `/compress`, `/preserve`, `/resume`. |
+| `commands/` | Slash commands: `/compress`, `/preserve`, `/resume`, `/goal`. |
+| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. |
 | `workflows/` | `phased-review.js` — capped, usage-gated spec-drift review. |
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
-| `docs/ARCHITECTURE.md` | The 6-layer design and how each layer enforces. |
+| `docs/` | `ARCHITECTURE.md` (the layered design) + `goal-loop-engineering.md` (Goal Contracts + Loop Specs wired to the usage proxy). |
 
-## Installed skills (external — referenced, not vendored)
+## Skills
 
-These are installed via Claude Code's plugin system and managed/overwritten upstream, so they
-are **not** redistributed here. Install them separately:
+The 5 cognitive-technique skills in `skills/` are **hand-authored and included** here (adapted
+from Compound AI Operating Standards, CC BY 4.0). They auto-invoke based on their `description`.
+
+The skills below are **external** — installed via Claude Code's plugin system and
+managed/overwritten upstream, so they are **not** redistributed here. Install them separately:
 
 - `efficient-fable` — conductor/worker delegation design.
 - `quick-recap` — the 🟢/🟡/🔴 status-line convention.
