@@ -1,0 +1,93 @@
+{
+  "origin_id": "claude-config-public",
+  "version": "1.0.0",
+  "file_count": 17,
+  "aggregate_sha256": "8659e8dd85e57b0f384b781a9862749293aeeef673bb91a1d38414553a93b3bf",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "86078500a687523fa30b230e74b64811ef22c70f0bc8a5d6b4e41aff20c68b33",
+      "bytes": 586
+    },
+    {
+      "path": "AGENT.md",
+      "sha256": "0be0cb466f68c68d81a4a96cb082b4ff43153861747d150c6bf1236f2eb16c7b",
+      "bytes": 3180
+    },
+    {
+      "path": "README.md",
+      "sha256": "e99b5bc09ca7ddd8aa6f99debb209d37afc0e106a05942d1723ca446cbfc3f0c",
+      "bytes": 3849
+    },
+    {
+      "path": "_index.md",
+      "sha256": "04d60ec191744d602530f313375ba2b7f0fc5b39a35d50f30cc7eeabe07194d9",
+      "bytes": 1963
+    },
+    {
+      "path": "agents/code-generator.md",
+      "sha256": "55b55b996e1bae6f4cc597d94d918761bd55a8dfa9881421ac125b18784e101f",
+      "bytes": 2013
+    },
+    {
+      "path": "agents/researcher.md",
+      "sha256": "0f53379edba6d5dab5b916fc1dbdcdca66d10c52b62b70c8e89f29c44a0fe46c",
+      "bytes": 2012
+    },
+    {
+      "path": "agents/tester.md",
+      "sha256": "0d3ce75321c0aa03e2292d5687a991d8aa1e8e32d5f8a1250133845a34352e2f",
+      "bytes": 2040
+    },
+    {
+      "path": "commands/compress.md",
+      "sha256": "c3d61fa74be18c640d2f9b6a747b3d9251f88b56967685f5adfa34e0e28e3e7b",
+      "bytes": 3510
+    },
+    {
+      "path": "commands/preserve.md",
+      "sha256": "97345547fbf263d281f535815aaf3499f63786e82995b1125df503dc51155255",
+      "bytes": 2963
+    },
+    {
+      "path": "commands/resume.md",
+      "sha256": "208f24006878e464ddc2dc1ff87c88ab85945eede3cd0933ade34e4af0981da2",
+      "bytes": 2488
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "sha256": "321d4ff76c53735b7862f515a2fcda5ad51797231e762eb97aaa4b8af850c59d",
+      "bytes": 3431
+    },
+    {
+      "path": "hooks/session-router.sh",
+      "sha256": "2d12bcf538e85f57e040de080f5901a469cfaf3a7fc3f206ca3a358fb7c5ba91",
+      "bytes": 5331
+    },
+    {
+      "path": "hooks/usage-guard.sh",
+      "sha256": "b2b913372015421069487e8f380ac88cb5dec8261c5b3e8653f884dfc8d01792",
+      "bytes": 5905
+    },
+    {
+      "path": "scripts/build-manifest.py",
+      "sha256": "5d10e111e506d7f5445b4e477837a2e7111f9c5d8cd55d33c9975c6676cbd470",
+      "bytes": 2548
+    },
+    {
+      "path": "scripts/verify-integrity.py",
+      "sha256": "b8bc9a81d3328f5c561cdf2153caeac5411358b7c335d5b0f329622087705da5",
+      "bytes": 3003
+    },
+    {
+      "path": "settings.example.json",
+      "sha256": "cfe612fa496ac6b15ad9ac5954d566ac9c7af0024167ecab8af49cc586d19fce",
+      "bytes": 824
+    },
+    {
+      "path": "workflows/phased-review.js",
+      "sha256": "ff2f1bd0b6ec8f99fc68260e75e25e9177942ca445f09eff42843c89c1388795",
+      "bytes": 14221
+    }
+  ]
+}

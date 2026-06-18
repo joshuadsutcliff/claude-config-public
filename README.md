@@ -61,6 +61,16 @@ following are *never* committed: `~/.claude.json`, `.credentials.json`, auth cac
 `settings.local.json` (the per-machine override layer). Before every commit, verify nothing
 sensitive is staged.
 
+## Provenance
+
+This repo carries a SHA256 integrity manifest so anyone can confirm a copy is unmodified
+(and detect forks). Regenerate it after changing any tracked file, and verify a clone with:
+
+```bash
+python3 scripts/build-manifest.py     # writes scripts/manifest.json + scripts/manifest.sha256
+python3 scripts/verify-integrity.py   # re-hashes the tree; exits non-zero on any drift
+```
+
 ## License & provenance
 
 This is a public, scrubbed export of a personal configuration, shared for comparison and
