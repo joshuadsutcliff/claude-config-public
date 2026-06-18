@@ -1,0 +1,31 @@
+# Never commit secrets, credentials, or conversation history.
+# This is a curated public export — keep it that way.
+
+# Auth / secrets
+.credentials.json
+*secret*
+*.key
+*.pem
+mcp-needs-auth-cache.json
+
+# Per-machine override layer (never synced).
+# Use settings.example.json as the template; the real settings.json stays local.
+settings.local.json
+settings.json
+
+# Conversation transcripts / history / caches (never belong in a public repo)
+projects/
+sessions/
+history.jsonl
+file-history/
+shell-snapshots/
+plans/
+cache/
+telemetry/
+debug/
+downloads/
+backups/
+*.bak
+
+# OS noise
+.DS_Store

@@ -1,0 +1,41 @@
+{
+  "effortLevel": "medium",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/usage-guard.sh refresh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/usage-guard.sh inform"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/session-router.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Agent|Workflow",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/usage-guard.sh block"
+          }
+        ]
+      }
+    ]
+  }
+}
