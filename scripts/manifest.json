@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 24,
-  "aggregate_sha256": "904edeeaa4d0634cf65bf9bec41b1ed801fea6a85893513e619d776327ce5d25",
+  "file_count": 45,
+  "aggregate_sha256": "8f569a08d7c983d79ee62a2f03cad2933a0146b91abc7856116d191f821365cd",
   "files": [
     {
       "path": ".gitignore",
@@ -16,18 +16,23 @@
     },
     {
       "path": "README.md",
-      "sha256": "6e90cddc6f10b4fc4699950e08971456cf0fd2be3a89ba787c877b475a05f63b",
-      "bytes": 4260
+      "sha256": "8d8cc25bc2a4bf78ed971575722596f33b23ddfe6af85eb83a86966df1acd6ec",
+      "bytes": 5865
     },
     {
       "path": "_index.md",
-      "sha256": "3677f9ec2ef0644e62b2d793b8283684c67c56b73ed2dc5964972b1878901c96",
-      "bytes": 2970
+      "sha256": "a943632077058d9e8f38a8181e728de7eed62ab92db5091f824826b8465397d1",
+      "bytes": 5677
     },
     {
       "path": "agents/code-generator.md",
       "sha256": "55b55b996e1bae6f4cc597d94d918761bd55a8dfa9881421ac125b18784e101f",
       "bytes": 2013
+    },
+    {
+      "path": "agents/code-reviewer.md",
+      "sha256": "a0813f77c78969b5a23cfe108f2e49f3064571bd5496ae1a8a532a97b8528b83",
+      "bytes": 3887
     },
     {
       "path": "agents/researcher.md",
@@ -45,9 +50,29 @@
       "bytes": 3510
     },
     {
+      "path": "commands/daily-note.md",
+      "sha256": "a3bf8dc2002c13ce484cd5f4d5833b357d01098601a93e27faa4db0a4079e0cf",
+      "bytes": 4984
+    },
+    {
       "path": "commands/goal.md",
       "sha256": "4cf48be6d28cf0c4fa3508ef9d59d6e3dbe6265c0c8f7a2839e0ea1f722b624a",
       "bytes": 2106
+    },
+    {
+      "path": "commands/inbox-process.md",
+      "sha256": "86087dbebc59ed030997893feb536b8fe39fcdcb1782fbf92d4bb90c70ccd2f2",
+      "bytes": 2858
+    },
+    {
+      "path": "commands/meeting-note.md",
+      "sha256": "2b90b0046ced0bb8e1d43c859c21ea40fc5b1e2c4f8fe50f81079d227a1ab0b7",
+      "bytes": 2953
+    },
+    {
+      "path": "commands/new-project.md",
+      "sha256": "5d5b4abe4cffbc82c46ebfac92656da54ded76b9fb5c998b81c60c557b9f5e51",
+      "bytes": 2418
     },
     {
       "path": "commands/preserve.md",
@@ -60,14 +85,44 @@
       "bytes": 2488
     },
     {
+      "path": "commands/sync-config.md",
+      "sha256": "88ff60b33a82cf8a3fea45ecd5d325c10cce63feb65fa7488ff76e3a8a824220",
+      "bytes": 6558
+    },
+    {
+      "path": "commands/sync-machine.md",
+      "sha256": "2bd4b048e82670d244019c36a0d824af4f2f6b822811af8c85a01eb8fa984719",
+      "bytes": 10916
+    },
+    {
+      "path": "commands/weekly-review.md",
+      "sha256": "0827b365086b924059db56c1883d560d36159b7b7e94302f566f88732d1d9304",
+      "bytes": 3448
+    },
+    {
+      "path": "commands/wrap.md",
+      "sha256": "7c5d705addf4f1fa9ff0a8115f2cda613e3cf2ffee4b9e7d49cadab9d472a87b",
+      "bytes": 5510
+    },
+    {
       "path": "docs/ARCHITECTURE.md",
       "sha256": "321d4ff76c53735b7862f515a2fcda5ad51797231e762eb97aaa4b8af850c59d",
       "bytes": 3431
     },
     {
+      "path": "docs/OBSIDIAN-SETUP.md",
+      "sha256": "be56c810439a3c5ac3a64a18f773bbbe919a44e243061fabfaeeaacac0e3c6d7",
+      "bytes": 8986
+    },
+    {
       "path": "docs/goal-loop-engineering.md",
       "sha256": "e118d215c60e67079bd0bde30dbba08024ac945426a9cd0f8f322a7c714b7148",
       "bytes": 3248
+    },
+    {
+      "path": "hooks/post-compact.sh",
+      "sha256": "5bf88f131d66aa57556193b3a7954003de520676a6a526651bf57a64d20f36ea",
+      "bytes": 2144
     },
     {
       "path": "hooks/session-router.sh",
@@ -91,8 +146,8 @@
     },
     {
       "path": "settings.example.json",
-      "sha256": "cfe612fa496ac6b15ad9ac5954d566ac9c7af0024167ecab8af49cc586d19fce",
-      "bytes": 824
+      "sha256": "233280ecdbaee0a888cbefe06304d4493bf2bbdb2b9821684ba9273f7bacfe5f",
+      "bytes": 942
     },
     {
       "path": "skills/consequence-simulation/SKILL.md",
@@ -103,6 +158,31 @@
       "path": "skills/detached-judgment/SKILL.md",
       "sha256": "99938563fdcb810d1909921d1f54758ae3f9ccfca8a587b376eaae6989694c26",
       "bytes": 2103
+    },
+    {
+      "path": "skills/efficient-fable/README.md",
+      "sha256": "c49402afc9a7b689e8a4bb4a0ffa8a6e2983974e34974632ddcfb329f8913f54",
+      "bytes": 2999
+    },
+    {
+      "path": "skills/efficient-fable/SKILL.md",
+      "sha256": "88323da64a6ac7cd63ff40b4c798b7bb994de599ff48ee5db56bb2bf9123e675",
+      "bytes": 3983
+    },
+    {
+      "path": "skills/efficient-fable/assets/fable-orchestrator-dark.png",
+      "sha256": "2ef235b84ef1d49a197cbd21599190528ff4bdeccd905360d94ee7f70c337e78",
+      "bytes": 111350
+    },
+    {
+      "path": "skills/efficient-fable/assets/fable-orchestrator.excalidraw",
+      "sha256": "201fff8842ab23f01bf673af7a2fe4f170b2acc3bd58265893109985d8f36ac8",
+      "bytes": 19562
+    },
+    {
+      "path": "skills/efficient-fable/assets/fable-orchestrator.png",
+      "sha256": "444ca9f93f890774b1cd070feafdf921368f9962df6beff5578cd57b99bba8a1",
+      "bytes": 111227
     },
     {
       "path": "skills/nod-protocol/SKILL.md",
@@ -118,6 +198,31 @@
       "path": "skills/pressure-test/SKILL.md",
       "sha256": "7dc7b450d0c27fe13b5931ebb1960fdb2b2a3c7a6c900f30eb6a4452bfeb5830",
       "bytes": 2085
+    },
+    {
+      "path": "skills/quick-recap/README.md",
+      "sha256": "7f56fe9ffadc005c089decaecc6f7256472632089b935ff4b854950853b6b314",
+      "bytes": 1537
+    },
+    {
+      "path": "skills/quick-recap/SKILL.md",
+      "sha256": "99cc768cd2ae40a75cf7bafc2be9495cf4ee7cc977dd6c752794df0f82a9a51c",
+      "bytes": 1420
+    },
+    {
+      "path": "skills/stay-within-limits/README.md",
+      "sha256": "bdc48e42fa70cbcd77dd517788cbff77c287423a8a1e0579e5c7ae3ece1e4ea5",
+      "bytes": 2518
+    },
+    {
+      "path": "skills/stay-within-limits/SKILL.md",
+      "sha256": "efd8de7b047c885ea6bede15df72cd41c554e86ec6ffc027d44caf4cf9e796f1",
+      "bytes": 3427
+    },
+    {
+      "path": "templates/CLAUDE.vault.example.md",
+      "sha256": "85ec2d7642df9ad093a867fb4a0e2695cb10d0df942add343323a64d380d0acc",
+      "bytes": 5133
     },
     {
       "path": "workflows/phased-review.js",

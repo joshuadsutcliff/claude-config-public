@@ -8,6 +8,10 @@
             "type": "command",
             "command": "bash ~/.claude/hooks/usage-guard.sh refresh",
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/post-compact.sh"
           }
         ]
       }

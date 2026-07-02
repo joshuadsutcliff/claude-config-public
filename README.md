@@ -15,32 +15,56 @@ Start with **`AGENT.md`** (the operating contract), then **`_index.md`** (asset 
 
 ---
 
+## Obsidian + Claude quick start
+
+This repo also documents a full **Obsidian-vault-as-memory-backend** workflow — session
+lifecycle (`/resume` → work → `/wrap`), frontmatter-driven surfacing, daily/weekly notes, project
+scaffolding, and more. If you want that:
+
+1. Clone this repo (or point an existing Claude Code session at it).
+2. Tell Claude: *"Read `docs/OBSIDIAN-SETUP.md` and integrate this into my setup."*
+3. Claude will walk through copying commands/skills/agents/hooks into `~/.claude/`, wiring
+   `settings.example.json`, scaffolding your vault folders, and adapting
+   `templates/CLAUDE.vault.example.md` into your vault's own `CLAUDE.md` — asking you for your
+   real paths/usernames along the way.
+
+See `docs/OBSIDIAN-SETUP.md` for the full guide, including which pieces (multi-machine sync,
+usage-guard, session-router) are optional.
+
+---
+
 ## What's here
 
 | Path | Contents |
 |---|---|
 | `AGENT.md` | Root operating contract — conductor/worker model + enforcement layer. |
 | `_index.md` | Registry of every tracked asset. |
-| `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router). The enforcement layer. |
-| `agents/` | Named delegation workers: `researcher`, `code-generator`, `tester`. |
-| `commands/` | Slash commands: `/compress`, `/preserve`, `/resume`, `/goal`. |
-| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. |
+| `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router), `post-compact.sh` (re-grounds the model after auto-compaction). |
+| `agents/` | Named delegation workers: `researcher`, `code-generator`, `tester`, plus `code-reviewer` (reviews completed work against its plan). |
+| `commands/` | Session lifecycle: `/compress`, `/preserve`, `/resume`, `/wrap`, `/goal`. Vault workflow: `/sync-config`, `/sync-machine`, `/daily-note`, `/inbox-process`, `/meeting-note`, `/new-project`, `/weekly-review`. |
+| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Also vendored upstream skills: `efficient-fable`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
 | `workflows/` | `phased-review.js` — capped, usage-gated spec-drift review. |
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
-| `docs/` | `ARCHITECTURE.md` (the layered design) + `goal-loop-engineering.md` (Goal Contracts + Loop Specs wired to the usage proxy). |
+| `docs/` | `ARCHITECTURE.md` (the layered design), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
+| `templates/` | `CLAUDE.vault.example.md` — fill-in-the-blanks vault-level CLAUDE.md. |
 
 ## Skills
 
-The 5 cognitive-technique skills in `skills/` are **hand-authored and included** here (adapted
-from Compound AI Operating Standards, CC BY 4.0). They auto-invoke based on their `description`.
+The 5 hand-authored cognitive-technique skills in `skills/` (parallel-lens-synthesis,
+consequence-simulation, detached-judgment, pressure-test, nod-protocol) are **included** here
+(adapted from Compound AI Operating Standards, CC BY 4.0). They auto-invoke based on their
+`description`.
 
-The skills below are **external** — installed via Claude Code's plugin system and
-managed/overwritten upstream, so they are **not** redistributed here. Install them separately:
+Three more skills are **vendored** from the upstream Claude Code skills distribution — copied in
+full (including assets), marked with a provenance comment in each README, and may drift from
+upstream over time:
 
 - `efficient-fable` — conductor/worker delegation design.
 - `quick-recap` — the 🟢/🟡/🔴 status-line convention.
 - `stay-within-limits` — usage-aware pausing across work waves.
-- `visual-plan`, `visual-recap` — interactive plan/diff visualizations.
+
+`visual-plan` and `visual-recap` (interactive plan/diff visualizations) remain **external** —
+install them separately via Claude Code's plugin system; they are not redistributed here.
 
 ## Try it
 
