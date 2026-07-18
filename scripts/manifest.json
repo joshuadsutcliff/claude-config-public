@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 45,
-  "aggregate_sha256": "8f569a08d7c983d79ee62a2f03cad2933a0146b91abc7856116d191f821365cd",
+  "file_count": 48,
+  "aggregate_sha256": "d938533d8b82914a9bb7644f12c32ea0fc5cbfe1eb9ca9db13241e524cfb99b8",
   "files": [
     {
       "path": ".gitignore",
@@ -16,13 +16,13 @@
     },
     {
       "path": "README.md",
-      "sha256": "8d8cc25bc2a4bf78ed971575722596f33b23ddfe6af85eb83a86966df1acd6ec",
-      "bytes": 5865
+      "sha256": "35bb53192aa2fb20ccaab84afaea21cc36a007917bb41726aac97cb15d366889",
+      "bytes": 6575
     },
     {
       "path": "_index.md",
-      "sha256": "a943632077058d9e8f38a8181e728de7eed62ab92db5091f824826b8465397d1",
-      "bytes": 5677
+      "sha256": "36c1e1dc7a04ed520058413291101fc60b75f64568b3ee011e0791cbfb3e2b26",
+      "bytes": 6484
     },
     {
       "path": "agents/code-generator.md",
@@ -185,6 +185,16 @@
       "bytes": 111227
     },
     {
+      "path": "skills/grill-me/SKILL.md",
+      "sha256": "2dee16f52aeb8d8d3d0abce0dba824c32bd9b87bcdaeed27ec44e69707a7f8ce",
+      "bytes": 1845
+    },
+    {
+      "path": "skills/model-council/SKILL.md",
+      "sha256": "9668e6a3470f7bfacba7342f33550a18a35dab6eb389a9762def74441af558cc",
+      "bytes": 3042
+    },
+    {
       "path": "skills/nod-protocol/SKILL.md",
       "sha256": "32e7bad48b56b9b100017283dca9f36809189563ac37547324c9db8684be98ad",
       "bytes": 2130
@@ -208,6 +218,11 @@
       "path": "skills/quick-recap/SKILL.md",
       "sha256": "99cc768cd2ae40a75cf7bafc2be9495cf4ee7cc977dd6c752794df0f82a9a51c",
       "bytes": 1420
+    },
+    {
+      "path": "skills/skill-evolution/SKILL.md",
+      "sha256": "92384906595a2bd296e91218f74290836c5534209f787b459e0a558f8088e705",
+      "bytes": 3384
     },
     {
       "path": "skills/stay-within-limits/README.md",

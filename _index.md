@@ -55,6 +55,16 @@ Auto-invoked by their `description`. Adapted from Compound AI Operating Standard
 | `pressure-test` | Validating a finding/plan/design across fixed adversarial lenses before acting. |
 | `nod-protocol` | "Negate Own Default" — stress a fast, confident conclusion before locking it in. |
 
+## Skills (`skills/`) — hand-authored process skills *(added 2026-07-18)*
+
+Original to this config (community-inspired, written fresh — see each SKILL.md).
+
+| Skill | Use when |
+|---|---|
+| `grill-me` | A non-trivial build/design/research request arrives underspecified — interrogate intent BEFORE brainstorming or planning. |
+| `model-council` | Before committing to a high-stakes or contested decision/design/diff — convene 2-3 non-Claude models (OpenRouter free tier) as independent reviewers to catch blind spots correlated across single-vendor review. |
+| `skill-evolution` | Friction with any skill is noticed mid-session, or the user corrects how their intent was read — logs one-line observations; batched, human-approved evolution passes keep the skill library and user model current. |
+
 ## Skills (`skills/`) — vendored from upstream
 
 Copied in full (including assets) from the upstream Claude Code skills distribution; each

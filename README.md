@@ -42,7 +42,7 @@ usage-guard, session-router) are optional.
 | `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router), `post-compact.sh` (re-grounds the model after auto-compaction). |
 | `agents/` | Named delegation workers: `researcher`, `code-generator`, `tester`, plus `code-reviewer` (reviews completed work against its plan). |
 | `commands/` | Session lifecycle: `/compress`, `/preserve`, `/resume`, `/wrap`, `/goal`. Vault workflow: `/sync-config`, `/sync-machine`, `/daily-note`, `/inbox-process`, `/meeting-note`, `/new-project`, `/weekly-review`. |
-| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Also vendored upstream skills: `efficient-fable`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
+| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Hand-authored process skills: `grill-me`, `model-council`, `skill-evolution`. Also vendored upstream skills: `efficient-fable`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
 | `workflows/` | `phased-review.js` — capped, usage-gated spec-drift review. |
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
 | `docs/` | `ARCHITECTURE.md` (the layered design), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
@@ -54,6 +54,16 @@ The 5 hand-authored cognitive-technique skills in `skills/` (parallel-lens-synth
 consequence-simulation, detached-judgment, pressure-test, nod-protocol) are **included** here
 (adapted from Compound AI Operating Standards, CC BY 4.0). They auto-invoke based on their
 `description`.
+
+Three hand-authored **process skills** (added 2026-07-18; original to this config,
+community-inspired) are also included:
+
+- `grill-me` — pointed requirements interrogation BEFORE brainstorming/planning, gated to
+  genuinely underspecified requests.
+- `model-council` — convenes 2-3 non-Claude models (OpenRouter free tier) as independent
+  reviewers on high-stakes decisions, catching blind spots correlated across single-vendor review.
+- `skill-evolution` — an observation log + batched, human-approved evolution passes for the
+  skill library itself (ships without the private observation log; it's created on first use).
 
 Three more skills are **vendored** from the upstream Claude Code skills distribution — copied in
 full (including assets), marked with a provenance comment in each README, and may drift from
