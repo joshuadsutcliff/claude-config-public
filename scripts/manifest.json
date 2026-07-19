@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 48,
-  "aggregate_sha256": "d938533d8b82914a9bb7644f12c32ea0fc5cbfe1eb9ca9db13241e524cfb99b8",
+  "file_count": 49,
+  "aggregate_sha256": "ac1e0f560590efcfffee11c5c04168be6ff4f0b36520409d783088bb9fc2ba88",
   "files": [
     {
       "path": ".gitignore",
@@ -11,18 +11,18 @@
     },
     {
       "path": "AGENT.md",
-      "sha256": "0be0cb466f68c68d81a4a96cb082b4ff43153861747d150c6bf1236f2eb16c7b",
-      "bytes": 3180
+      "sha256": "e452fe3eccabf34b2925a2090a424181e2c346f60f84d53efc43ef8efa07d404",
+      "bytes": 3531
     },
     {
       "path": "README.md",
-      "sha256": "35bb53192aa2fb20ccaab84afaea21cc36a007917bb41726aac97cb15d366889",
-      "bytes": 6575
+      "sha256": "bc8a01c44271c7ccb3b0b2e5a8f75b33881b05896d36544428ef5cb317789861",
+      "bytes": 8283
     },
     {
       "path": "_index.md",
-      "sha256": "36c1e1dc7a04ed520058413291101fc60b75f64568b3ee011e0791cbfb3e2b26",
-      "bytes": 6484
+      "sha256": "9fd1499ea6e9992e7e24766264b4025821e3d036b6b16353e9d4c0e8da399fc7",
+      "bytes": 6689
     },
     {
       "path": "agents/code-generator.md",
@@ -108,6 +108,11 @@
       "path": "docs/ARCHITECTURE.md",
       "sha256": "321d4ff76c53735b7862f515a2fcda5ad51797231e762eb97aaa4b8af850c59d",
       "bytes": 3431
+    },
+    {
+      "path": "docs/DELEGATION-LADDER.md",
+      "sha256": "2a897c8746bd012ac98289f2c020936aad1ea95cc1c11105a27d9bd5bb0e6f1d",
+      "bytes": 4059
     },
     {
       "path": "docs/OBSIDIAN-SETUP.md",

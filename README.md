@@ -45,7 +45,7 @@ usage-guard, session-router) are optional.
 | `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Hand-authored process skills: `grill-me`, `model-council`, `skill-evolution`. Also vendored upstream skills: `efficient-fable`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
 | `workflows/` | `phased-review.js` — capped, usage-gated spec-drift review. |
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
-| `docs/` | `ARCHITECTURE.md` (the layered design), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
+| `docs/` | `ARCHITECTURE.md` (the layered design), `DELEGATION-LADDER.md` (usage-adaptive routing incl. the free-model tier), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
 | `templates/` | `CLAUDE.vault.example.md` — fill-in-the-blanks vault-level CLAUDE.md. |
 
 ## Skills
@@ -75,6 +75,29 @@ upstream over time:
 
 `visual-plan` and `visual-recap` (interactive plan/diff visualizations) remain **external** —
 install them separately via Claude Code's plugin system; they are not redistributed here.
+
+## Free-model tier & usage-adaptive routing *(added 2026-07-19)*
+
+The conductor/worker ladder gained a fifth tier and a routing brain — see
+**`docs/DELEGATION-LADDER.md`** for the full doctrine. The short version:
+
+- **A free-model tier below the paid workers.** A bring-your-own-key terminal harness
+  (e.g. [Forge](https://forgecode.dev)) running free-tier models — the shared OpenRouter
+  `:free` pool for commodity traffic plus a **direct Gemini free-tier key** as a dedicated
+  reserve quota immune to peak-hour pool congestion. It takes self-contained work only:
+  second opinions, adjudication cross-checks, copy review. Zero paid tokens.
+- **Usage-adaptive routing (Cascade-inspired).** Routing is keyed to the live usage signal
+  the guard hook already computes: the busier the 5-hour window, the more eligible work
+  shifts down-ladder — until, above the hard-block threshold, the free tier is the only
+  lane still running.
+- **A capability floor — "regulation, not degradation."** Repo/tool-dependent work,
+  precision edits, and time-critical paths never route down regardless of burn, and every
+  free-model verdict is a conductor-verified *lead*, never a final answer (empirically:
+  free models catch inconsistency and over-claiming; they miss domain wrongness).
+- **Spec-driven planning IDE as an adjacent lane.** A free-tier agentic IDE (e.g.
+  [Kiro](https://kiro.dev)) is seeded with repo steering files and used for structured
+  product-probe interviews — responses are captured into the memory vault, source-verified
+  by a worker, and adjudicated by the conductor before anything changes a roadmap.
 
 ## Try it
 

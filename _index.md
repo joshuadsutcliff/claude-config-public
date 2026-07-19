@@ -99,6 +99,7 @@ README carries a provenance comment. May be updated upstream — check for drift
 | File | Function |
 |---|---|
 | `ARCHITECTURE.md` | The layered design of the enforcement runtime. |
+| `DELEGATION-LADDER.md` | Usage-adaptive routing: the 5-tier ladder incl. the free-model tier (Forge/OpenRouter + direct Gemini), routing bands keyed to the live usage signal, and the capability floor. |
 | `goal-loop-engineering.md` | Goal Contracts + Loop Specs wired to the usage proxy. |
 | `OBSIDIAN-SETUP.md` | Claude-facing integration guide: what the vault workflow is, the command/skill reference, and step-by-step instructions for wiring it into a new setup. |
 

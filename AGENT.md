@@ -13,6 +13,10 @@ The doctrine is portable; the enforcement mechanism is Claude Code-specific.
   "Conductor" is a *role, not a fixed model* — swap the occupant without touching the machinery.
 - Token-heavy bounded work (repo/doc scans, candidate edits, test/log runs) is **delegated
   to cheaper workers** (`researcher`, `code-generator`, `tester` — see `agents/`).
+- Below the paid workers sits a **free-model tier** (a bring-your-own-key harness running
+  free-tier models) for self-contained second opinions, adjudications, and copy review —
+  routed **usage-adaptively**: the busier the paid window, the more work shifts down, but
+  never below the capability floor. Full doctrine: `docs/DELEGATION-LADDER.md`.
 - Write every handoff as if the worker has zero chat context: objective, in-scope paths,
   out-of-scope surfaces, required evidence format, stop conditions.
 - Treat worker reports as **leads, not facts** — re-verify cited files before acting.
