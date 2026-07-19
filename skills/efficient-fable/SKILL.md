@@ -50,6 +50,10 @@ only the context it needs:
 - Stop conditions: if the code does not match the prompt, a command fails after
   a reasonable retry, or the task needs out-of-scope files, stop and report
   instead of improvising.
+- If the packet pins content verbatim ("approved final — do not reword"), also
+  define the amendment channel: "the dispatcher may send ONE amendment prefixed
+  CONDUCTOR AMENDMENT — apply it." Otherwise workers either refuse legitimate
+  mid-flight updates or accept unsigned ones; both have happened.
 
 ## Vetting Delegated Work
 

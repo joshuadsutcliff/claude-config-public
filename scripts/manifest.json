@@ -2,7 +2,7 @@
   "origin_id": "claude-config-public",
   "version": "1.0.0",
   "file_count": 49,
-  "aggregate_sha256": "ac1e0f560590efcfffee11c5c04168be6ff4f0b36520409d783088bb9fc2ba88",
+  "aggregate_sha256": "223c3095bd8ef5ac02e5c5ea09498c09f1f376bf8d03bd0343149edc0e040a54",
   "files": [
     {
       "path": ".gitignore",
@@ -101,8 +101,8 @@
     },
     {
       "path": "commands/wrap.md",
-      "sha256": "7c5d705addf4f1fa9ff0a8115f2cda613e3cf2ffee4b9e7d49cadab9d472a87b",
-      "bytes": 5510
+      "sha256": "f952773a1539ce7a87f6f854773adebf497b25c28c73dff02545b851558b2e0e",
+      "bytes": 6026
     },
     {
       "path": "docs/ARCHITECTURE.md",
@@ -171,8 +171,8 @@
     },
     {
       "path": "skills/efficient-fable/SKILL.md",
-      "sha256": "88323da64a6ac7cd63ff40b4c798b7bb994de599ff48ee5db56bb2bf9123e675",
-      "bytes": 3983
+      "sha256": "2050c321af7e362b4a4c78fa74ac77b2aba96217f338d5f29d5c5d918bf4d64e",
+      "bytes": 4290
     },
     {
       "path": "skills/efficient-fable/assets/fable-orchestrator-dark.png",
@@ -196,8 +196,8 @@
     },
     {
       "path": "skills/model-council/SKILL.md",
-      "sha256": "9668e6a3470f7bfacba7342f33550a18a35dab6eb389a9762def74441af558cc",
-      "bytes": 3042
+      "sha256": "024c723a63efb98ec18b595d550703f98d0353e6f328349fa15f8e03495760be",
+      "bytes": 3328
     },
     {
       "path": "skills/nod-protocol/SKILL.md",
@@ -246,8 +246,8 @@
     },
     {
       "path": "workflows/phased-review.js",
-      "sha256": "ff2f1bd0b6ec8f99fc68260e75e25e9177942ca445f09eff42843c89c1388795",
-      "bytes": 14221
+      "sha256": "043c0b3dbb4a108780e76fc9ac043e4296b76a6537cf0e2c8e43daf588a0ee68",
+      "bytes": 15129
     }
   ]
 }

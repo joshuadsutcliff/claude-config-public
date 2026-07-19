@@ -19,7 +19,7 @@ Skip for routine work — each convening costs council-member requests against t
 3. **Query each independently** (never share one member's answer with another before their own verdict). API key: `$OPENROUTER_API_KEY` (supply your own — never commit it anywhere). One curl per member:
    `curl -s https://openrouter.ai/api/v1/chat/completions -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{"model":"<id>","messages":[{"role":"user","content":"<skeptic prompt + brief>"}]}'`
    Skeptic prompt core: "You are an independent reviewer. Try to find what is wrong or risky in the following. Do not be agreeable; a confident 'this is sound' requires justification. End with verdict: APPROVE / APPROVE-WITH-CHANGES / REJECT + top 3 concerns."
-4. **Handle free-tier reality:** 429 → try the next model on the list, don't retry-loop. Respect ~20 req/min.
+4. **Handle free-tier reality:** 429 → try the next model on the list, don't retry-loop. Respect ~20 req/min. Expect saturation waves at peak hours (US evenings): budget 2× candidate models for the seats you want. If a direct free-tier provider key is configured (e.g. Gemini via Google AI Studio), that seat is a dedicated quota immune to pool congestion — prefer it for a guaranteed member.
 5. **Synthesize as chair:** where members agree with each other (or with your own view), note it briefly; where they dissent, dig into WHY before dismissing — dissent from a weaker model can still mark a real blind spot. Deliver: consensus, live disagreements, your final recommendation, and what changed because of the council.
 
 ## Rules

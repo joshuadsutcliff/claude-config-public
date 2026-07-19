@@ -147,9 +147,22 @@ const checkUsage = async () => {
 phase('Contract')
 
 const specPath = args?.spec ?? ''
-const target   = args?.repo ?? args?.target ?? '.'
+// Accept a bare-string args as the target path; NEVER default to '.' — the session cwd is
+// the vault, and defaulting there is exactly the 2026-07-18 misfire (16 agents audited the
+// wrong repo). No target → halt before spending a single agent.
+const target = typeof args === 'string' ? args : (args?.repo ?? args?.target ?? null)
+if (!target) {
+  return { halted: true, reason: 'No target passed — refusing to default to the session cwd. Pass args.repo (absolute path to the repo under review).', unauditedSurfaces: [], confirmedFindings: [], synthesis: null }
+}
+// Injected into EVERY agent prompt (contract included — it previously got no target at all).
+const TARGET_BLOCK =
+  `TARGET REPO (MANDATORY): ${target}\n` +
+  `Operate ONLY inside this absolute path. If it does not exist, is not a repo, or is ` +
+  `plainly not the codebase the spec describes, STOP immediately and say so in your ` +
+  `output instead of auditing anything else.\n\n`
 
 const contract = await countedAgent(
+  TARGET_BLOCK +
   `Read the spec/PRD at: ${specPath || '(see task description)'}\n\n` +
   (args?.specContent ? `Spec content:\n${args.specContent}\n\n` : '') +
   `Task: distill every checkable requirement into a numbered checklist. ` +
@@ -170,7 +183,7 @@ log(`Contract: ${contract.requirements.length} requirements extracted`)
 phase('Baseline')
 
 const baseline = await countedAgent(
-  `Target: ${target}\n\n` +
+  TARGET_BLOCK +
   `Review git log, existing TODO/FIXME comments, and any known-issues docs. ` +
   `Return: (1) a list of already-known issues so auditors don't re-report them, ` +
   `(2) suggested surface names for auditing this codebase (max ${cfg.maxSurfaces}). ` +
@@ -238,7 +251,7 @@ for (let i = 0; i < surfaces.length; i += cfg.waveSize) {
     // stage 1: audit (one sonnet agent per surface)
     async (surface, _orig, idx) => {
       return countedAgent(
-        `Target: ${target}\nSurface: "${surface}"\n\n` +
+        TARGET_BLOCK + `Surface: "${surface}"\n\n` +
         `Requirements checklist:\n${requirementSummary}\n\n` +
         `${knownSummary}\n\n` +
         `Audit the "${surface}" surface of the target against the checklist. ` +
@@ -271,7 +284,7 @@ for (let i = 0; i < surfaces.length; i += cfg.waveSize) {
         .join('\n')
 
       return countedAgent(
-        `Target: ${target}\nSurface: "${surface}"\n\n` +
+        TARGET_BLOCK + `Surface: "${surface}"\n\n` +
         `Verify these findings from the audit of "${surface}":\n${findingsList}\n\n` +
         `For each finding, argue the KEEP case (why this finding might be wrong or not worth fixing). ` +
         `Then decide: is it real? If real, what action: delete (code/feature removal), collapse (simplify/merge), rewrite (substantial fix), note (low-priority)? ` +

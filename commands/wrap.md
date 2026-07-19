@@ -28,6 +28,7 @@ Gather the signals, then show the user a one-screen plan **before acting**:
 2. **Config drift** (decides whether Step 3 runs). `git -C "$HOME/.claude" fetch origin`, then `git -C "$HOME/.claude" status --porcelain` (local shareable edits) and `git -C "$HOME/.claude" rev-list --left-right --count HEAD...origin/main` (ahead/behind). **Drift = any local change OR any incoming/outgoing commit** → Step 3 is NEEDED; otherwise SKIP it silently.
 3. **Preserve candidates.** Review THIS session for durable knowledge not already captured — standing conventions, permanent decisions, reusable reference material, or rules that supersede something in CLAUDE.md. If none, the preserve-check is a no-op.
 4. **Session triviality.** If the session did no substantive work (pure Q&A, nothing changed/decided), compress may be noise — offer to skip rather than logging an empty session.
+5. **Skill-evolution check** (see the `skill-evolution` skill). Append any unlogged observations from this session to its observation log. If ≥5 entries are unprocessed, run the evolution pass **inline as part of this wrap**: draft the batch, present it for approval inside the wrap flow, apply what's approved, tick entries — don't defer to a later session. Batch approval remains mandatory; never apply silently. Run it before Step 2 so vault-side changes ride the vault push; config-side changes ride Step 3.
 
 Present it compactly, e.g.:
 > **Wrap plan:** ① preserve 1 decision (confirm below) · ② compress → vault push · ③ sync-config (3 local edits to push).
