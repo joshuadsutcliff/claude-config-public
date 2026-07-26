@@ -39,7 +39,7 @@ usage-guard, session-router) are optional.
 |---|---|
 | `AGENT.md` | Root operating contract — conductor/worker model + enforcement layer. |
 | `_index.md` | Registry of every tracked asset. |
-| `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router), `post-compact.sh` (re-grounds the model after auto-compaction). |
+| `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement + the M1 spawn-rate limiter), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router with a binding HEAVY plan-then-stop gate), `conductor-tripwire.sh` (logs execution-shaped conductor output), `post-compact.sh` (re-grounds the model after auto-compaction). |
 | `agents/` | Named delegation workers: `researcher`, `code-generator`, `tester`, plus `code-reviewer` (reviews completed work against its plan). |
 | `commands/` | Session lifecycle: `/compress`, `/preserve`, `/resume`, `/wrap`, `/goal`. Vault workflow: `/sync-config`, `/sync-machine`, `/daily-note`, `/inbox-process`, `/meeting-note`, `/new-project`, `/weekly-review`. |
 | `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Hand-authored process skills: `grill-me`, `model-council`, `skill-evolution`. Also vendored upstream skills: `efficient-fable`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
@@ -47,6 +47,36 @@ usage-guard, session-router) are optional.
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
 | `docs/` | `ARCHITECTURE.md` (the layered design), `DELEGATION-LADDER.md` (usage-adaptive routing incl. the free-model tier), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
 | `templates/` | `CLAUDE.vault.example.md` — fill-in-the-blanks vault-level CLAUDE.md. |
+
+## The enforcement layer *(added 2026-07-26)*
+
+Written rules failed three times. The conductor performed ~15 vault edits inline with no rule
+firing; it inline-integrated a 250-line worker draft while designing the compliance tests for
+that exact rule; and it ran a certification battery from inside its own session, burned 36% of
+a weekly usage cap in 32 minutes, was told emphatically to stop, serialized, and kept 24 more
+sessions running at full throughput.
+
+The root cause is not ignorance: the model wrote the rules. Task-completion drive overrides
+compliance drive when the model has momentum, and it will always construct a technically
+compliant reading that permits continuing. That cannot be prompted away; it can only be
+mechanically prevented.
+
+The fix is a circuit breaker, not a better rule:
+
+- **Spawn-rate limiter (M1)** — `usage-guard.sh` PreToolUse policy: more than 4 Agent/Workflow
+  spawns in a rolling 5-minute window, machine-global, is a hard deny. The hook counts; it does
+  not evaluate justifications.
+- **Plan-then-stop gate** — `session-router.sh` classifies every prompt; HEAVY tasks get a
+  binding injected constraint: state scope, list atomic steps, name the first, and STOP for the
+  user's explicit go.
+- **Conductor tripwire** — `conductor-tripwire.sh` flags execution-shaped conductor output
+  (bulk edits, long inline code, scan loops). It logs rather than blocks: the observability
+  layer.
+- **Hard parallel ceiling** — never more than 2 concurrent subagents without explicit
+  authorization; "prefer parallel when independent" is retired. M1 enforces it mechanically.
+
+Voluntary compliance is a bonus, not the safety mechanism. When the hooks never fire the system
+is working; when task pressure builds, the hooks are what protect the budget.
 
 ## Skills
 

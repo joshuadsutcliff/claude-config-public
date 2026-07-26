@@ -49,6 +49,11 @@ try:
         r"whole (codebase|repo|repository|project)",
         r"end[- ]to[- ]end", r"\btest suite\b", r"\bbenchmark", r"\bdeep research\b",
         r"phased[- ]review", r"\bbuild (a|an|the|out|me) ", r"\bset up (a|an|the) ",
+        # Windows/AD infra work is conductor-grade even when tersely phrased
+        # (added 2026-07-16 — router under-called GPO/DC marathons as LIGHT/MEDIUM):
+        r"\bgpo\b", r"\bfsmo\b", r"\bsysvol\b", r"\bgpmc\b", r"\bauditpol\b",
+        r"\bwef\b", r"\bdomain controller", r"\bdcpromo\b", r"\bdemote\b",
+        r"\bgroup policy\b", r"\bactive directory\b", r"\bwsus\b",
     ]
     # Bounded execution work → delegate the heavy lifting to a sonnet/haiku worker.
     MEDIUM = [
@@ -64,8 +69,27 @@ try:
         r"\btypo\b", r"\bremind me\b", r"\bdoes .* support\b", r"\bcan you tell me\b",
     ]
 
+    # Opinion/advisory-shaped prompts down-weight to LIGHT even when entity-dense,
+    # unless they also contain an explicit action verb (added 2026-07-25 — recurring
+    # over-classification of "what do you think / thoughts on / should I A or B" turns).
+    ADVISORY = [
+        r"what do you think", r"your thoughts", r"thoughts on",
+        r"should i .* or ", r"sound good", r"is .* a good idea",
+        r"would you recommend", r"\ba or b\b",
+    ]
+    ACTION_VERBS = [
+        r"\bfix\b", r"\binstall\b", r"\bbuild\b", r"\bdeploy\b",
+        r"\brefactor\b", r"\brun\b", r"\bcreate\b", r"\bmigrat",
+    ]
+
     def hits(pats):
         return sum(1 for pat in pats if re.search(pat, p))
+
+    is_advisory = hits(ADVISORY) > 0
+    has_action_verb = hits(ACTION_VERBS) > 0
+
+    if is_advisory and not has_action_verb:
+        sys.exit(0)
 
     sh, sm, sl = hits(HEAVY), hits(MEDIUM), hits(LIGHT)
 
@@ -79,6 +103,10 @@ try:
         tier = "LIGHT"
     else:
         tier = "MEDIUM"
+
+    # LIGHT injects nothing — brevity lives in standing rules (Kiro adjudication 2026-07-21)
+    if tier == "LIGHT":
+        sys.exit(0)
 
     POLICY = {
         "LIGHT": (
@@ -95,17 +123,26 @@ try:
             "judging, and relaying. Don't do the heavy lifting yourself."
         ),
         "HEAVY": (
-            "Multi-step / codebase-spanning work. Use the full conductor/delegation "
-            "design: plan, fan out bounded work to sonnet/haiku workers or the "
-            "phased-review / Workflow machinery, then judge and synthesize. Respect "
-            "usage-guard caps. If the reasoning is hard and effort is low, consider "
-            "asking the user to raise /effort (the hook can't set it)."
+            "HEAVY task detected. You MUST plan before executing. In this turn:\n"
+            "1. State the full scope (all files/systems that will be touched, all workers needed).\n"
+            "2. Break the work into numbered atomic steps — each step ≤1 worker spawn and ≤3 files.\n"
+            "3. State which step you will do FIRST.\n"
+            "4. STOP. Do not begin execution. Wait for the user's explicit go.\n\n"
+            "Do NOT begin execution in this response. Planning output only. "
+            "If the task is genuinely a single atomic action (one file, one command), "
+            "say so and execute it — this gate is for multi-step work, not one-liners. "
+            "The session-router hook injected this constraint mechanically; it is not optional."
         ),
     }
 
-    msg = ("[session-router] Tier: %s (heuristic prior — override with your own "
-           "judgment if the task is actually lighter/heavier). Policy: %s"
-           % (tier, POLICY[tier]))
+    if tier == "HEAVY":
+        msg = ("[session-router] Tier: HEAVY (mechanical plan-then-stop gate — "
+               "binding; the only escape hatch is the single-atomic-action clause "
+               "in the policy itself). Policy: %s" % POLICY[tier])
+    else:
+        msg = ("[session-router] Tier: %s (heuristic prior — override with your own "
+               "judgment if the task is actually lighter/heavier). Policy: %s"
+               % (tier, POLICY[tier]))
 
     out = {
         "hookSpecificOutput": {

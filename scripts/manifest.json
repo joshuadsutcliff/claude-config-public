@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 49,
-  "aggregate_sha256": "223c3095bd8ef5ac02e5c5ea09498c09f1f376bf8d03bd0343149edc0e040a54",
+  "file_count": 50,
+  "aggregate_sha256": "0b652cdf35a27c2889a4880674054ced0d93ca806a1244d588fae64557de7a0a",
   "files": [
     {
       "path": ".gitignore",
@@ -16,8 +16,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "bc8a01c44271c7ccb3b0b2e5a8f75b33881b05896d36544428ef5cb317789861",
-      "bytes": 8283
+      "sha256": "3a6ba4370be6a079c87ea003c45db9f92a8ec4dd8b0cf252f71bb3197ef767f8",
+      "bytes": 10210
     },
     {
       "path": "_index.md",
@@ -125,19 +125,24 @@
       "bytes": 3248
     },
     {
+      "path": "hooks/conductor-tripwire.sh",
+      "sha256": "82f21688d275ecec1fd18f30eaf4dfa56a37c724a11aee81cd06be80c4b9c452",
+      "bytes": 8083
+    },
+    {
       "path": "hooks/post-compact.sh",
       "sha256": "5bf88f131d66aa57556193b3a7954003de520676a6a526651bf57a64d20f36ea",
       "bytes": 2144
     },
     {
       "path": "hooks/session-router.sh",
-      "sha256": "2d12bcf538e85f57e040de080f5901a469cfaf3a7fc3f206ca3a358fb7c5ba91",
-      "bytes": 5331
+      "sha256": "645a39b9b688f0ca411f0302af314eeccb29021fcd68cdb5b9af26568d9ad0aa",
+      "bytes": 7275
     },
     {
       "path": "hooks/usage-guard.sh",
-      "sha256": "b2b913372015421069487e8f380ac88cb5dec8261c5b3e8653f884dfc8d01792",
-      "bytes": 5905
+      "sha256": "4c659844cfaed79a89bf2bcbcd86de578b3c5a1297ee1ffee444af164a295003",
+      "bytes": 22260
     },
     {
       "path": "scripts/build-manifest.py",
