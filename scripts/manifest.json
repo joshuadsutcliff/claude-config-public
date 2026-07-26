@@ -2,7 +2,7 @@
   "origin_id": "claude-config-public",
   "version": "1.0.0",
   "file_count": 50,
-  "aggregate_sha256": "0b652cdf35a27c2889a4880674054ced0d93ca806a1244d588fae64557de7a0a",
+  "aggregate_sha256": "b88bf1aa7ee640a8fa9e11139afc677f3d6a6f364ebf026e2479420abfa555f8",
   "files": [
     {
       "path": ".gitignore",
@@ -136,8 +136,8 @@
     },
     {
       "path": "hooks/session-router.sh",
-      "sha256": "645a39b9b688f0ca411f0302af314eeccb29021fcd68cdb5b9af26568d9ad0aa",
-      "bytes": 7275
+      "sha256": "be1e7cc921f98db6e534d7b04bffa48d59524f71debc83eb5fc3a596ad50800b",
+      "bytes": 7662
     },
     {
       "path": "hooks/usage-guard.sh",

@@ -36,6 +36,13 @@ try:
     if not prompt.strip():
         sys.exit(0)
 
+    # Background task-notifications are system events, not user prompts — classifying
+    # them fired the HEAVY gate on every worker-completion turn (added 2026-07-26,
+    # observed 6x in one session). Skip classification entirely for these turns.
+    head = prompt.lstrip()[:200]
+    if head.startswith("[SYSTEM NOTIFICATION") or "<task-notification>" in head:
+        sys.exit(0)
+
     p = prompt.lower()
     words = len(prompt.split())
 
