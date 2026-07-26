@@ -2,7 +2,7 @@
   "origin_id": "claude-config-public",
   "version": "1.0.0",
   "file_count": 50,
-  "aggregate_sha256": "b88bf1aa7ee640a8fa9e11139afc677f3d6a6f364ebf026e2479420abfa555f8",
+  "aggregate_sha256": "ea23fb07a73e94e83e6dacfed4b73ced28f2887f7b109e26c1de595404ebd550",
   "files": [
     {
       "path": ".gitignore",
@@ -176,8 +176,8 @@
     },
     {
       "path": "skills/efficient-fable/SKILL.md",
-      "sha256": "2050c321af7e362b4a4c78fa74ac77b2aba96217f338d5f29d5c5d918bf4d64e",
-      "bytes": 4290
+      "sha256": "45c509f1bc72e5d4db612fcc85ca889687a6672f72f0f85692cf9c9b05e6b55a",
+      "bytes": 15948
     },
     {
       "path": "skills/efficient-fable/assets/fable-orchestrator-dark.png",
