@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 50,
-  "aggregate_sha256": "ea23fb07a73e94e83e6dacfed4b73ced28f2887f7b109e26c1de595404ebd550",
+  "file_count": 51,
+  "aggregate_sha256": "86b22799d76a42a060085d5b6f89bf431bc4d0ad604cf5858ccd2a3e04caf6ce",
   "files": [
     {
       "path": ".gitignore",
@@ -16,8 +16,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "3a6ba4370be6a079c87ea003c45db9f92a8ec4dd8b0cf252f71bb3197ef767f8",
-      "bytes": 10210
+      "sha256": "21a6e5351a540374f309d4655aecf4641e0c2a583e75eefecbe8dd53c8685f36",
+      "bytes": 10413
     },
     {
       "path": "_index.md",
@@ -136,8 +136,13 @@
     },
     {
       "path": "hooks/session-router.sh",
-      "sha256": "be1e7cc921f98db6e534d7b04bffa48d59524f71debc83eb5fc3a596ad50800b",
-      "bytes": 7662
+      "sha256": "9790ffc8edde1a3e7f6b3e921c588c8c9aefadf13e075bdaea37e86f825e6d8f",
+      "bytes": 7909
+    },
+    {
+      "path": "hooks/session-timer.sh",
+      "sha256": "275235d22318eaa94ba69abe1733af42568f431df5f0864f42ccfa30c6599e74",
+      "bytes": 2894
     },
     {
       "path": "hooks/usage-guard.sh",
@@ -176,8 +181,8 @@
     },
     {
       "path": "skills/efficient-fable/SKILL.md",
-      "sha256": "45c509f1bc72e5d4db612fcc85ca889687a6672f72f0f85692cf9c9b05e6b55a",
-      "bytes": 15948
+      "sha256": "0eb2a4371a85c43e58dfa30ed4eb4d16fc9cd6c4433aa11de1477988158bbff5",
+      "bytes": 19594
     },
     {
       "path": "skills/efficient-fable/assets/fable-orchestrator-dark.png",

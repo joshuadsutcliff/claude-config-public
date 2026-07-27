@@ -100,8 +100,10 @@ try:
 
     sh, sm, sl = hits(HEAVY), hits(MEDIUM), hits(LIGHT)
 
-    if sh > 0 or words > 180:
+    if (sh > 0 and words > 40) or words > 180:
         tier = "HEAVY"
+    elif sh > 0 and words <= 40:
+        tier = "MEDIUM"  # short prompts with heavy keywords → MEDIUM, not HEAVY
     elif sl > 0 and sm == 0 and words <= 40:
         tier = "LIGHT"
     elif sm > 0 or words > 70:
@@ -134,7 +136,8 @@ try:
             "1. State the full scope (all files/systems that will be touched, all workers needed).\n"
             "2. Break the work into numbered atomic steps — each step ≤1 worker spawn and ≤3 files.\n"
             "3. State which step you will do FIRST.\n"
-            "4. STOP. Do not begin execution. Wait for the user's explicit go.\n\n"
+            "4. STOP. Do not begin execution. Wait for the user's explicit go.\n"
+            "5. Estimate: ~N workers, ~M minutes, approximate cost if you can infer from similar recent tasks.\n\n"
             "Do NOT begin execution in this response. Planning output only. "
             "If the task is genuinely a single atomic action (one file, one command), "
             "say so and execute it — this gate is for multi-step work, not one-liners. "

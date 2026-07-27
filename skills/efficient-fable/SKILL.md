@@ -120,6 +120,20 @@ only the context it needs:
   define the amendment channel: "the dispatcher may send ONE amendment prefixed
   CONDUCTOR AMENDMENT — apply it." Otherwise workers either refuse legitimate
   mid-flight updates or accept unsigned ones; both have happened.
+- **Completion proof required in every worker report.** The worker's final
+  message must contain a VERIFICATION section with: (a) the exact command(s)
+  it ran that confirm success, (b) their output, (c) whether the output
+  matches the stated success criteria. A report that ends without this
+  section is incomplete — the conductor rejects it and counts it as a strike
+  under the two-strike rule. "I did the work" is not completion; "here is the
+  proof it succeeded" is.
+- **Hard time budget in every brief.** State in the delegation brief:
+  "Complete within N minutes or report what you have and stop." Defaults:
+  5 minutes for Haiku workers, 10 minutes for Sonnet, 15 for Opus. A worker
+  that hits its time budget must stop gracefully and return partial findings
+  — this is not a failure, it's a report. The conductor grades partial
+  reports the same as full ones and applies the two-strike rule if the
+  partial is unusable.
 - **Credentialed scans use a KNOWN key path — never a secret-hunting brief.** When a
   scan needs an API key/token, the conductor identifies the exact credential location
   itself (or the user supplies/runs it) and passes only that path — NEVER instruct a
@@ -183,6 +197,38 @@ only the context it needs:
   teardown; the conductor waited 61 minutes for a completion that was never
   coming, when a 2-minute SSH check would have confirmed the fix was already
   done. The task took 1h27m instead of 26m.)
+- **10-minute stuck rule (2026-07-26).** If 10 minutes of wall-clock time
+  pass without either: (a) a tool call completing, (b) a worker returning,
+  or (c) a report to the user — you are stuck. State what you're waiting for,
+  what you've tried, and ask the user how to proceed. Do not wait silently beyond
+  10 minutes for any single event. "Waiting for a worker notification" is not
+  progress — if the notification hasn't arrived in 10 minutes, check the
+  state yourself (two-strike rule applies, one-off exemption covers a single
+  verification command) and report. (2026-07-26: the Palworld incident's
+  61-minute silent wait is the failure case — the work was done at minute 26
+  and the conductor sat idle without reporting.)
+- **Report length awareness (2026-07-26).** The conductor-tripwire hook
+  flags responses that exceed ~2000 characters when they end with a status
+  line (indicating a report). If the tripwire fires on length, the next
+  response must be tighter — the ≤8-line detail cap (quick-recap) has failed
+  three times as a written rule; the tripwire makes violations visible
+  immediately rather than logging them after the fact. Treat a length flag
+  the same as a user correction: tighten, don't explain why it was long.
+- **Per-session cost awareness (2026-07-26).** The usage-guard burn-check
+  injection now includes a session-scoped worker count. Use it as a
+  proportionality signal: if you've already dispatched 4+ workers on a task
+  that should have taken 1–2, you are over-engineering — report what you have
+  and ask the user whether to continue. A $15 session on a $2 task is a failure
+  of proportionality, not a success of thoroughness.
+- **Degraded-session recognition (2026-07-26).** If this session has
+  accumulated 2+ worker failures AND has been running for 60+ minutes, the
+  session is degraded. Report current state to the user and recommend: /wrap and
+  start fresh, or continue with an explicit scope reduction. A degraded
+  session costs more per turn (context bloat), produces lower-quality
+  decisions (attention spread thin), and compounds errors. The session-timer
+  hook will inject this recommendation automatically when both conditions are
+  met, but do not wait for the hook — if you notice both conditions yourself,
+  surface it immediately.
 
 ## Vetting Delegated Work
 
@@ -217,6 +263,11 @@ with Fable.
   wait more than 5 minutes for a worker that has already "finished" once
   without delivering a usable report — the completion notification lies;
   check state directly.
+- **Answering from context:** if the information is already visible in this
+  session's context (you read the file this turn, or the user told you the
+  answer), do not delegate a worker to re-read it. A delegation brief costs
+  more than typing the answer. The one-off exemption also covers "I already
+  know this from context, and stating it is cheaper than a worker round-trip."
 
 ## Diagram
 
