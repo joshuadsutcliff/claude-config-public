@@ -143,6 +143,33 @@ only the context it needs:
   classifier-blocked — a second line of defense the brief should never have needed).
   A read-only external API call with an already-located credential is conductor/user
   work, not delegated discovery.
+- **No coordination protocols exist unless the brief defines one.**
+  Workers must not invent or honor locks, mutexes, or serialization mechanisms not
+  named in the brief (a worker once fabricated a lock file, treated
+  it as held, and stalled). Include this disclaimer in briefs for machine-global work;
+  a worker narrating mechanisms its brief never defined is a content-incoherence tell —
+  discard the report and redispatch fresh.
+- **Check the vault secrets note before asking for credentials.** The
+  vault's private secrets note stores API keys, service passwords, and access
+  tokens for known hosts and services. Before asking the user for any
+  credential — SSH password, API key, service token, login — read that note
+  first. If the credential is there, use it silently. Only ask the user if
+  the credential genuinely isn't stored. A router hook may inject a reminder
+  on credential-shaped prompts, but do not rely on the injection —
+  internalize the lookup as the default first step for any remote-access task.
+- **Grep before Read on large files.** Before reading any vault
+  or reference file over ~100 lines in full, ask: do I need the whole file,
+  or do I need one fact from it? If one fact: `grep`/`awk` for it — a full
+  Read of a 200-line file adds ~800 tokens to context; a grep returns 2–3
+  lines. The difference compounds: 5 unnecessary full reads = 4,000 extra
+  tokens carried for the rest of the session (every subsequent turn re-reads
+  them at cache rates). **Exceptions where full reads are correct:** skill
+  bodies (need the full instruction set), the always-loaded config core,
+  files you're about to edit (need full context to place the edit), worker
+  briefs referencing a file's structure. **Session logs:** read only the top
+  sections (up to Pending Tasks), never the raw session-log section, per
+  the resume routine's existing rule. When in doubt: grep first; if the grep
+  doesn't answer the question, then read the targeted section.
 
 ## Conductor Field Rules
 
@@ -185,6 +212,13 @@ only the context it needs:
   (2026-07-23: zenity dialogs silently "cancelled" — the agent shell has no
   session/DBus, so the app's prompts auto-fail). Hand the launch to the user
   via `!`/a real terminal and monitor the app's own log file instead.
+- **Grep the depth note before briefing an infra diagnosis.**
+  Before dispatching a diagnosis worker for infra weirdness (SSH refusals, service
+  half-failures, network oddities), read/grep the relevant depth note(s) covering
+  that surface for known lockdowns and gotchas — the vault has already answered a
+  full diagnosis pass at least once (a TCP-wrappers lockdown was
+  documented in a homelab reference note the whole time). One targeted read is cheaper
+  than a worker.
 - **Two-strike rule on stranded/failed workers (2026-07-26 — Palworld
   incident).** If a delegated task fails, strands (yields without completing),
   or returns inconclusive results twice, do NOT dispatch a third worker.
@@ -237,6 +271,14 @@ opening a PR, or telling the user the work is done, Fable should reopen the
 important cited files, confirm the relevant line refs or failures, and review
 the final diff against the task. Let lighter agents gather signal; keep
 truth-judgment with Fable.
+
+**Commit durability:** in an auto-syncing repo (an Obsidian-Git-style vault),
+on-disk verification of a worker's edits is NOT durable — an auto pull can silently
+discard uncommitted changes when the remote touches the same files (a verified-on-disk
+edit vanished without ever being committed in one incident). Verification of vault
+writes includes confirming the edit lands in a commit — or committing it immediately.
+Machine-regenerated files (rewritten by an automated mirror job) are read-only
+surfaces: never target them for hand edits.
 
 ## Common Scenarios
 

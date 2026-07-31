@@ -13,6 +13,20 @@ illustrative — adapt to your own memory backend.)
 
 Parse `$ARGUMENTS` to determine count (first numeric token, default 3) and search term (remaining text, if any).
 
+## Fast-path (--fast)
+
+If `$ARGUMENTS` contains `--fast` (or the literal text `fast`):
+
+1. Run any sync/pull steps and machine detection, but skip everything else —
+   no orientation-note read, no session-log reading, no other integration steps.
+2. Report one line: `Synced. Active machine: {name} ({OS}, {shell}). Ready.`
+3. Stop. The user has a task ready; they don't need orientation.
+
+This saves several thousand input tokens (orientation note + session logs) and
+a few hundred output tokens (orientation narrative) per session. Use `/resume`
+(no flag) when you need the full orientation; use `/resume --fast` when you're
+giving an explicit task immediately.
+
 ## Step 1 — Orientation
 
 Read your orientation note (the who/what/priorities map). This is always required.

@@ -40,6 +40,7 @@ git -C "$HOME/.claude" fetch origin
 git -C "$HOME/.claude" log --oneline HEAD..origin/main   # what's incoming
 git -C "$HOME/.claude" pull --no-rebase origin main
 ```
+> **Held-back-`settings.json` collision (expect this whenever a fallback model is running).** The config's standing rules mandate leaving the local `model` line uncommitted when the user is temporarily off the shared default — which makes the tree permanently dirty, so a fast-forward-only pull aborts and a merge pull can stage the very line you must not push. Handle it as: **back up `settings.json` to a scratch location → `git checkout -- settings.json` → pull → hand the user a one-liner to re-apply their model line.** Do NOT restore it yourself — the permission classifier blocks the agent from writing `settings.json` by any tool. Do NOT copy the backup over the merged file either; it predates whatever hook wiring just arrived. Mention that the interactive model-switch command next session is the zero-effort alternative, since the file is only read at session start.
 - Auto-merges disjoint changes. **On a genuine merge conflict, STOP** and resolve *with the user* — never auto-pick. Hooks/commands are plain files; conflicts are readable.
 
 ## Step 3 — Review local changes for sync (outgoing review)

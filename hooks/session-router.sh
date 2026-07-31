@@ -46,6 +46,37 @@ try:
     p = prompt.lower()
     words = len(prompt.split())
 
+    # Credential-awareness injection: if the prompt mentions hosts/services/auth,
+    # remind the conductor to check the private secrets note before asking the user.
+    # Fires regardless of tier — the LIGHT/advisory early-exits emit a cred-only
+    # injection instead of nothing, because credential asks are usually short
+    # prompts that classify LIGHT.
+    CRED_PATTERNS = [
+        r"\bssh\b", r"\bpassword\b", r"\bcredential", r"\bapi.key\b",
+        r"\btoken\b", r"\blogin\b", r"\bauth\b", r"\baccess\b",
+        r"\b(meraki|cloudflare|grafana|influx|ntfy|plex|nas|synology)\b",
+        r"\b\d{1,3}(\.\d{1,3}){3}\b",
+    ]
+    cred_note = ""
+    if any(re.search(pat, p) for pat in CRED_PATTERNS):
+        cred_note = (
+            " [CREDENTIAL REMINDER: Before asking for any credential, "
+            "check the private secrets note in the vault — it exists "
+            "specifically so you don't have to ask. Read it first. "
+            "If the credential isn't there, THEN ask.]"
+        )
+
+    def emit_and_exit(text):
+        out = {
+            "hookSpecificOutput": {
+                "hookEventName": "UserPromptSubmit",
+                "additionalContext": text,
+            },
+            "suppressOutput": True,
+        }
+        sys.stdout.write(json.dumps(out))
+        sys.exit(0)
+
     # Codebase-spanning / multi-step / build-from-scratch work → full conductor design.
     HEAVY = [
         r"\brefactor", r"\bmigrat", r"\baudit", r"\bimplement", r"\brewrite",
@@ -96,6 +127,8 @@ try:
     has_action_verb = hits(ACTION_VERBS) > 0
 
     if is_advisory and not has_action_verb:
+        if cred_note:
+            emit_and_exit("[session-router]%s" % cred_note)
         sys.exit(0)
 
     sh, sm, sl = hits(HEAVY), hits(MEDIUM), hits(LIGHT)
@@ -114,7 +147,10 @@ try:
         tier = "MEDIUM"
 
     # LIGHT injects nothing — brevity lives in standing rules (Kiro adjudication 2026-07-21)
+    # — except the credential reminder, which fires regardless of tier.
     if tier == "LIGHT":
+        if cred_note:
+            emit_and_exit("[session-router]%s" % cred_note)
         sys.exit(0)
 
     POLICY = {
@@ -148,11 +184,11 @@ try:
     if tier == "HEAVY":
         msg = ("[session-router] Tier: HEAVY (mechanical plan-then-stop gate — "
                "binding; the only escape hatch is the single-atomic-action clause "
-               "in the policy itself). Policy: %s" % POLICY[tier])
+               "in the policy itself). Policy: %s%s" % (POLICY[tier], cred_note))
     else:
         msg = ("[session-router] Tier: %s (heuristic prior — override with your own "
-               "judgment if the task is actually lighter/heavier). Policy: %s"
-               % (tier, POLICY[tier]))
+               "judgment if the task is actually lighter/heavier). Policy: %s%s"
+               % (tier, POLICY[tier], cred_note))
 
     out = {
         "hookSpecificOutput": {

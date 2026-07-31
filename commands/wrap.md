@@ -18,6 +18,11 @@ It does **NOT** run `/sync-machine` — that's one-time-per-machine onboarding, 
 - `/wrap` — full intelligent run.
 - `/wrap no-preserve` — skip the preserve-check (still compress + sync-config).
 - `/wrap no-config` — skip sync-config even if it drifted.
+- `/wrap --quick` — skip preserve-check, write a minimal 15-line session log
+  (no raw-log section, no learnings/errors/setup sections — just
+  frontmatter + quick reference + files modified + pending tasks), push, done.
+  Use for sessions where the full template would be mostly empty sections.
+  Does NOT skip sync-config if drift exists.
 - Any other text → passed to `/compress` as a **slug hint** for the session-log filename.
 
 ## Step 0 — Assess & show a plan (do this first)
@@ -40,9 +45,41 @@ Present it compactly, e.g.:
 - For each confirmed item, follow the **`/preserve`** procedure (`commands/preserve.md`; you may invoke the preserve skill) to route it correctly.
 - These edits land in the vault and will be committed by Step 2.
 
-## Step 2 — Compress  — always, unless trivial + user opts to skip
+## Step 2 — Compress (delegated assembly)  — always, unless trivial + user opts to skip
 
-- Follow the full **`/compress`** procedure (`commands/compress.md`; you may invoke the compress skill): write the session log, verify frontmatter, then commit → pull → push the vault.
+The session log is mechanical assembly, not judgment — delegate it.
+
+1. **Conductor writes a bullet brief (inline, ~10 lines):** date, slug,
+   project, topics, outcome (1 sentence), decisions (bullets), learnings
+   (bullets), files modified (paths), pending tasks (carried forward). This
+   is the judgment step — deciding what matters.
+
+2. **Delegate to a Sonnet worker (effort: low):** pass the brief + the
+   session-log template (from `commands/compress.md` Step 2) and instruct:
+   "Assemble this into a complete session log file. Follow the template
+   exactly. Return the full file content."
+
+   Worker dispatch: `model=sonnet, effort=low, subagent_type=code-generator` —
+   the template is fully specified; low effort prevents the worker from
+   overthinking the assembly.
+
+3. **Conductor reviews** the returned file (~30s scan): frontmatter valid,
+   outcome line accurate, no fabricated content, slug is good. Fix any errors
+   inline (one-off edit exemption).
+
+4. **Save and push:** write the file, git add/commit/push per the existing
+   Step 5 of compress.md.
+
+**Why this works:** the expensive part of `/wrap` is the conductor's OUTPUT tokens
+writing a 60-line file. By delegating the write to a cheaper model (which costs
+much less per output token and doesn't consume the conductor model's own weekly
+cap), the conductor's cost drops to ~10 lines of bullet brief + a short review
+scan. The worker's cost comes from the pooled budget, not the conductor's cap.
+
+**Fallback:** if the delegated worker is unavailable (burn too high, spawn denied),
+the conductor writes the log inline as before — this is the degraded path, not
+the default.
+
 - If a slug hint was passed as args, use it for the log slug.
 - This push carries any CLAUDE.md / depth-note edits made in Step 1.
 
