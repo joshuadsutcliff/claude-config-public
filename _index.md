@@ -103,6 +103,12 @@ README carries a provenance comment. May be updated upstream — check for drift
 | `goal-loop-engineering.md` | Goal Contracts + Loop Specs wired to the usage proxy. |
 | `OBSIDIAN-SETUP.md` | Claude-facing integration guide: what the vault workflow is, the command/skill reference, and step-by-step instructions for wiring it into a new setup. |
 
+## Assets (`assets/`)
+
+| File | Function |
+|---|---|
+| `diagrams/diagram-1-architecture.png` … `diagram-6-cost-comparison.png` | The six architecture diagrams embedded in the README's "The system in six diagrams" section. |
+
 ## Not included here
 
 The hand-authored cognitive skills and the three vendored skills above **are** included. Only

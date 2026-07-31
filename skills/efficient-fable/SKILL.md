@@ -149,6 +149,12 @@ only the context it needs:
   it as held, and stalled). Include this disclaimer in briefs for machine-global work;
   a worker narrating mechanisms its brief never defined is a content-incoherence tell —
   discard the report and redispatch fresh.
+- **Workers scope git operations to files THEY edited.** A worker must never
+  `checkout`/`revert`/`restore`/`clean` files it did not itself modify — an
+  uncommitted change the worker didn't make is the conductor's in-progress work, not
+  an anomaly to fix (a docs worker once judged an approved uncommitted config edit a
+  "prompt-injection attempt" and checked it out, destroying conductor work). Report
+  suspicions; don't fix them. Include this line in any brief that grants git access.
 - **Check the vault secrets note before asking for credentials.** The
   vault's private secrets note stores API keys, service passwords, and access
   tokens for known hosts and services. Before asking the user for any

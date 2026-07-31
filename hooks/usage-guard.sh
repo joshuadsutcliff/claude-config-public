@@ -318,8 +318,10 @@ print(json.dumps({
     'decision': 'block',
     'reason': (
         'gh-auth mutex: another gh-credential-touching agent spawned <10 min ago. '
-        \"gh's active account is machine-global — serialize. If the prior worker has \"
-        'finished, remove ~/.claude/locks/gh-auth.lock and retry.'
+        \"gh's active account is machine-global — serialize. Wait out the 10-min \"
+        'window (the lock auto-expires) and retry, or continue other work meanwhile. '
+        '(Manual lock removal is classifier-blocked for the conductor; the user can '
+        'remove ~/.claude/locks/gh-auth.lock to release early.)'
     )
 }))" 2>/dev/null
                 exit 0
