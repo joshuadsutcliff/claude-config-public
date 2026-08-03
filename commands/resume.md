@@ -33,6 +33,10 @@ multi-machine mirror — see that command for details. Delete
 
 ## Fast-path (--fast)
 
+`/resume --fast` and `/wrap --fast` are a pair: close a session and
+immediately reopen a fresh one with a fresh token counter, picking up right
+where you left off.
+
 If `$ARGUMENTS` contains `--fast` (or the literal text `fast`):
 
 1. Run Step 0 (sync, if the flag is set) and machine detection, but skip everything

@@ -20,11 +20,21 @@ It does **NOT** run `/sync-machine` — that's one-time-per-machine onboarding, 
 - `/wrap` — full intelligent run.
 - `/wrap no-preserve` — skip the preserve-check (still compress + sync-config).
 - `/wrap no-config` — skip sync-config even if it drifted.
-- `/wrap --quick` — skip preserve-check, write a minimal 15-line session log
-  (no raw-log section, no learnings/errors/setup sections — just
-  frontmatter + quick reference + files modified + pending tasks), push, done.
-  Use for sessions where the full template would be mostly empty sections.
-  Does NOT skip sync-config if drift exists.
+- `/wrap --fast` — lightweight close, the counterpart of `/resume --fast`: the
+  pair exists for closing a session to immediately reopen a fresh one (new
+  token counter) and pick up right where you left off, so the log must carry
+  enough meaning for that pickup. Trim the boilerplate, keep everything that
+  carries meaning. (Renamed from `--quick`; treat `--quick` as a deprecated
+  alias.)
+  - Preserve-check still runs, but as a quick scan: surface only clearly
+    durable items; if none, say so in one line and move on — no fishing.
+  - The session log is a compact cut of the full template, not a stub:
+    frontmatter + a TL;DR-grade Quick Reference (dense enough to meaningfully
+    reconstruct the session later) + Decisions Made + Key Learnings + Errors
+    & Workarounds + Files Modified + Pending Tasks. Drop the raw-log section
+    and any section that would be empty. Aim ~30–40 lines.
+  - Everything conditional still runs as normal — sync-config included,
+    still gated on the multi-machine flag + drift per Step 0 below.
 - Any other text → passed to `/compress` as a **slug hint** for the session-log filename.
 
 ## Step 0 — Assess & show a plan (do this first)
