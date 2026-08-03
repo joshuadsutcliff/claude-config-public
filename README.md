@@ -10,6 +10,11 @@ delegation) and trust it to comply. This one wires those rules into **hooks** â€
 silently spawn many expensive subagents and exhaust a usage window quickly; the guard hook
 makes that limit mechanical rather than aspirational.
 
+**Prerequisite:** this config assumes a working Obsidian vault with the Claude Code CLI
+installed and running from the vault root. Starting from scratch? Do the
+[Obsidian + Claude Code setup guide](https://joshuasutcliff.com/guides/obsidian-claude-setup)
+first â€” it covers installation on macOS, Windows, and Linux, plus a starter `CLAUDE.md`.
+
 Start with **`AGENT.md`** (the operating contract), then **`_index.md`** (asset registry) and
 **`docs/ARCHITECTURE.md`** (the layered design).
 
