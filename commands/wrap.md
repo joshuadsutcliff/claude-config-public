@@ -5,7 +5,9 @@ The single end-of-session ritual. Pairs with **`/resume`** (which opens a sessio
 It orchestrates three things:
 1. **Preserve-check** *(confirm-first)* — surface durable decisions/learnings from this session that belong in long-term memory, and route only the ones you confirm.
 2. **Compress** *(almost always)* — write the session log + push the vault.
-3. **Sync-config** *(only if `~/.claude` drifted)* — reconcile the shared Claude config repo.
+3. **Sync-config** *(multi-machine setups only, and only if `~/.claude` drifted)* —
+   reconcile the shared Claude config repo. Single-machine setups (the default) skip
+   this step entirely — see the gate below.
 
 It does **NOT** run `/sync-machine` — that's one-time-per-machine onboarding, not a session-end action. `/wrap` only *detects* an un-onboarded machine and tells you to run it.
 
@@ -29,6 +31,10 @@ It does **NOT** run `/sync-machine` — that's one-time-per-machine onboarding, 
 
 Gather the signals, then show the user a one-screen plan **before acting**:
 
+0. **Multi-machine gate.** Check `[ -f ~/.claude/multi-machine ]`. If the flag is
+   **absent** (single-machine, the default), Step 3 is out of scope entirely — skip
+   items 1 and 2 below and go straight to item 3. Only run items 1–2 (and Step 3
+   later) if the flag is **present**.
 1. **Onboarding guard.** `git -C "$HOME/.claude" rev-parse --is-inside-work-tree` — if `~/.claude` is **not** a git repo, this machine isn't onboarded → tell the user to run **`/sync-machine`**, and skip Step 3 (still allow compress if the vault is a repo). Confirm the vault root is a git repo too.
 2. **Config drift** (decides whether Step 3 runs). `git -C "$HOME/.claude" fetch origin`, then `git -C "$HOME/.claude" status --porcelain` (local shareable edits) and `git -C "$HOME/.claude" rev-list --left-right --count HEAD...origin/main` (ahead/behind). **Drift = any local change OR any incoming/outgoing commit** → Step 3 is NEEDED; otherwise SKIP it silently.
 3. **Preserve candidates.** Review THIS session for durable knowledge not already captured — standing conventions, permanent decisions, reusable reference material, or rules that supersede something in CLAUDE.md. If none, the preserve-check is a no-op.
@@ -132,9 +138,10 @@ the default.
 - If a slug hint was passed as args, use it for the log slug.
 - This push carries any CLAUDE.md / depth-note edits made in Step 1.
 
-## Step 3 — Sync-config  — only if Step 0 found drift; skip if `no-config`, clean, or not onboarded
+## Step 3 — Sync-config  — multi-machine only; skip if the flag is absent, `no-config`, clean, or not onboarded
 
-- Follow the full **`/sync-config`** procedure (`commands/sync-config.md`; you may invoke the sync-config skill): identify the machine (Step 0 there), pull, review outgoing shareable changes (leak-check absolute paths + machine-local keys), confirm, then commit → pull → push `~/.claude`.
+- Skip this step entirely if `~/.claude/multi-machine` doesn't exist (single-machine setup — the default).
+- Otherwise, follow the full **`/sync-config`** procedure (`commands/sync-config.md`; you may invoke the sync-config skill): identify the machine (Step 0 there), pull, review outgoing shareable changes (leak-check absolute paths + machine-local keys), confirm, then commit → pull → push `~/.claude`.
 - If the onboarding guard tripped, skip and remind the user to run **`/sync-machine`**.
 
 ## Step 4 — Combined report

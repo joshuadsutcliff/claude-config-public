@@ -13,13 +13,32 @@ illustrative — adapt to your own memory backend.)
 
 Parse `$ARGUMENTS` to determine count (first numeric token, default 3) and search term (remaining text, if any).
 
+## Step 0 — Multi-machine sync (opt-in, gated)
+
+Check for the opt-in flag: `[ -f ~/.claude/multi-machine ]`.
+
+- **Flag absent (the default, single-machine setup):** skip this step entirely — no
+  vault pull, no config pull. Go straight to Step 1.
+- **Flag present:** this machine is part of a multi-machine mirror — run the sync steps:
+  1. **Vault pull:** from the vault root, `git pull --no-rebase` (3-way merge). On a
+     genuine conflict, **stop and resolve it with the user** — never auto-pick a side.
+  2. **Config pull:** `git -C "$HOME/.claude" pull --ff-only origin main`. `--ff-only`
+     is a safety valve — it aborts untouched if this machine has diverged or has local
+     edits, rather than merging silently. If it aborts, tell the user to run
+     **`/sync-config`** to reconcile properly.
+
+The flag is created by **`/sync-machine`** when a machine is onboarded into a
+multi-machine mirror — see that command for details. Delete
+`~/.claude/multi-machine` at any time to revert to single-machine behavior.
+
 ## Fast-path (--fast)
 
 If `$ARGUMENTS` contains `--fast` (or the literal text `fast`):
 
-1. Run any sync/pull steps and machine detection, but skip everything else —
-   no orientation-note read, no session-log reading, no other integration steps.
+1. Run Step 0 (sync, if the flag is set) and machine detection, but skip everything
+   else — no orientation-note read, no session-log reading, no other integration steps.
 2. Report one line: `Synced. Active machine: {name} ({OS}, {shell}). Ready.`
+   (If the multi-machine flag isn't set, just report `Ready.`)
 3. Stop. The user has a task ready; they don't need orientation.
 
 This saves several thousand input tokens (orientation note + session logs) and

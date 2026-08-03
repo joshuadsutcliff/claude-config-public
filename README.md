@@ -92,6 +92,19 @@ usage-guard, session-router) are optional.
 
 ---
 
+## One-click install
+
+Prefer a single command over the manual walkthrough? These scripts automate Steps 1-4 above
+(install Obsidian, install Claude Code, create your vault folder, write a starter `CLAUDE.md`).
+
+- macOS/Linux: `curl -fsSL https://raw.githubusercontent.com/joshuadsutcliff/claude-config-public/main/scripts/install.sh | bash`
+- Windows (PowerShell): `irm https://raw.githubusercontent.com/joshuadsutcliff/claude-config-public/main/scripts/install.ps1 | iex`
+
+Each script detects what's already installed and skips it, asks for your vault path (with a
+sensible default), and never overwrites an existing `CLAUDE.md`. Safe to run more than once.
+
+---
+
 ## What's here
 
 | Path | Contents |
@@ -106,6 +119,16 @@ usage-guard, session-router) are optional.
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
 | `docs/` | `ARCHITECTURE.md` (the layered design), `DELEGATION-LADDER.md` (usage-adaptive routing incl. the free-model tier), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
 | `templates/` | `CLAUDE.vault.example.md` — fill-in-the-blanks vault-level CLAUDE.md. |
+
+### Multi-machine sync is optional
+
+Single-machine is the default: `/resume` and `/wrap` never touch a remote repo out
+of the box. Multi-machine sync (vault + `~/.claude` mirrored across several
+machines via GitHub) is an opt-in add-on — run **`/sync-machine`** on a second
+machine to turn it on, which sets a flag file (`~/.claude/multi-machine`).
+Once that flag exists, `/resume` picks up vault/config pulls automatically and
+`/wrap` picks up the `/sync-config` step automatically — no other setup needed.
+Delete the flag file to go back to single-machine behavior.
 
 ## The enforcement layer *(added 2026-07-26)*
 

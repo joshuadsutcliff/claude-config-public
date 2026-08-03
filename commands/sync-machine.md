@@ -58,6 +58,15 @@ git -C <path> pull --no-rebase origin main
 
 > Files were read-only (mode `555`) on at least one machine — if a write is denied, `chmod u+w <file>`, write, then `chmod 555 <file>` to restore.
 
+## Step 1b — Set the multi-machine flag
+
+Run `touch ~/.claude/multi-machine`. This flag file is what `/resume` and `/wrap`
+check to decide whether to run their sync/pull and sync-config steps — it's how
+this machine (and every machine already using this mirror) tells those commands
+"multi-machine sync is active, don't skip it." Deleting `~/.claude/multi-machine`
+at any point reverts this machine to single-machine behavior (no auto sync in
+`/resume`/`/wrap`) without undoing anything else this command set up.
+
 ## Step 2 — Obsidian Git plugin (vault auto-sync)
 
 If `<vault>/.obsidian/plugins/obsidian-git/` is missing, install + configure it (it's gitignored, so per-machine):
