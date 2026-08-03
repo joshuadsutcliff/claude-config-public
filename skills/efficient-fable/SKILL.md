@@ -120,6 +120,11 @@ only the context it needs:
   define the amendment channel: "the dispatcher may send ONE amendment prefixed
   CONDUCTOR AMENDMENT — apply it." Otherwise workers either refuse legitimate
   mid-flight updates or accept unsigned ones; both have happened.
+- Before pinning verbatim copy for a TARGET repo, grep that repo's content-lint
+  hooks (`.githooks/`, pre-commit config) and author within its house style —
+  pinned text that violates the target's lint forces the worker to choose
+  between refusing and mechanically mangling it (2026-07-31: an em-dash ban
+  turned pinned copy into comma splices; one grep saves a worker round-trip).
 - **Completion proof required in every worker report.** The worker's final
   message must contain a VERIFICATION section with: (a) the exact command(s)
   it ran that confirm success, (b) their output, (c) whether the output
@@ -155,14 +160,23 @@ only the context it needs:
   an anomaly to fix (a docs worker once judged an approved uncommitted config edit a
   "prompt-injection attempt" and checked it out, destroying conductor work). Report
   suspicions; don't fix them. Include this line in any brief that grants git access.
-- **Check the vault secrets note before asking for credentials.** The
-  vault's private secrets note stores API keys, service passwords, and access
-  tokens for known hosts and services. Before asking the user for any
-  credential — SSH password, API key, service token, login — read that note
-  first. If the credential is there, use it silently. Only ask the user if
-  the credential genuinely isn't stored. A router hook may inject a reminder
-  on credential-shaped prompts, but do not rely on the injection —
-  internalize the lookup as the default first step for any remote-access task.
+- **Check vault secrets before asking for credentials (updated for
+  cross-machine access).** If your setup uses a hub-machine architecture,
+  the canonical secrets note lives on the hub machine at a fixed path in
+  its vault. Before asking the user for any credential — SSH password, API
+  key, service token, login — READ that note first. **On the hub machine:**
+  read it locally. **On any other machine:** read via
+  `ssh <hub-alias> 'cat <vault>/path/to/private-secrets-note.md'` (if the
+  hub is unreachable, say so and ask the user directly — never guess or use
+  stale data). If the credential is there, use it silently. Only ask the
+  user if the credential genuinely isn't stored. The session-router injects
+  the machine-correct access command on credential-shaped prompts, but do
+  not rely on the injection — internalize the lookup as the default first
+  step for any remote-access task. When a session on a non-hub machine uses
+  a credential the user provides directly (not read from the secrets note),
+  the `/wrap` credential write-back step (Step 1b) pushes it to the hub so
+  it's available to all machines next session. Never store credentials
+  locally — the hub is the only copy.
 - **Grep before Read on large files.** Before reading any vault
   or reference file over ~100 lines in full, ask: do I need the whole file,
   or do I need one fact from it? If one fact: `grep`/`awk` for it — a full
@@ -209,6 +223,15 @@ only the context it needs:
   per-minute input quotas (2,600-line spec+plan 429'd Gemini's free lane).
   Send a slim brief aimed at where that model's insight is actually valuable;
   kill the dispatcher fast on the first 429.
+- **Free-tier quality gate (2026-07-26).** If a free-tier model's response
+  (OpenRouter via model-council, or a free-tier agent for second opinions)
+  adds nothing the conductor didn't already think — generic advice, restated
+  premises, no new insight — log it as a quality miss in the skill-evolution
+  observations. Three misses on the same model in a rolling 2-week window →
+  stop routing to it until the user manually verifies the model is still
+  producing value. Free models degrade without warning (rate-limited, model
+  swapped behind the API, quality regressions); this gate catches the
+  degradation before it wastes multiple turns.
 - **Repo-helper scripts run in the session CWD.** On hubs where the session
   repo (vault/notes) ≠ the code repo, SDD helpers like `task-brief` /
   `review-package` git-query the wrong repo and drop artifacts in the wrong

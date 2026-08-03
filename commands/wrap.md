@@ -45,6 +45,55 @@ Present it compactly, e.g.:
 - For each confirmed item, follow the **`/preserve`** procedure (`commands/preserve.md`; you may invoke the preserve skill) to route it correctly.
 - These edits land in the vault and will be committed by Step 2.
 
+## Step 1b — Credential write-back to the hub machine (non-hub machines only)
+
+If your setup uses a hub-machine architecture (one always-on machine holding
+the single canonical secrets note in its vault, with other machines
+reading/appending it over SSH — see the `efficient-fable` secrets rule),
+and this session used, received, or discovered any credentials that aren't
+already in that canonical note, push them back now so the central source of
+truth stays current. Skip this step entirely if your setup has no such hub.
+
+**When to fire:** only when ALL of these are true:
+- This machine is NOT the hub machine (the hub writes locally — no SSH needed)
+- The conductor received or used a credential this session that it read from
+  the user directly (not from the secrets note)
+- The credential is reusable (not a one-time token or session cookie)
+
+**How:**
+1. Format the new credential(s) as a markdown block:
+   ```
+   ## [Service/Host Name] (added YYYY-MM-DD from [machine-name])
+   - [credential-type]: [value]
+   - [access-notes if relevant]
+   ```
+
+2. Append to the hub's canonical secrets note via SSH:
+   ```bash
+   ssh <hub-alias> 'cat >> <vault>/path/to/private-secrets-note.md'
+   ```
+   Pipe the formatted block into that command.
+
+3. Verify the append landed:
+   ```bash
+   ssh <hub-alias> 'tail -5 <vault>/path/to/private-secrets-note.md'
+   ```
+
+**Hard rules:**
+- Use `cat >>` (append), NEVER `cat >` (overwrite). Overwriting would
+  destroy all existing credentials.
+- Never store credentials in a non-hub machine's vault. The local vault has
+  NO secrets note — the hub is the only copy.
+- If SSH to the hub fails (VPN/tailnet down, machine unreachable), report
+  the new credentials to the user in the wrap summary and flag them as
+  "NOT YET WRITTEN TO THE HUB — add manually or retry next session."
+- On the hub machine itself, this step is a no-op (skip entirely).
+- Only write genuinely new credentials. If the credential was read FROM the
+  secrets note this session, it's already there — don't re-append duplicates.
+
+**Skip if:** no new credentials were used this session (the common case —
+most sessions don't introduce new credentials).
+
 ## Step 2 — Compress (delegated assembly)  — always, unless trivial + user opts to skip
 
 The session log is mechanical assembly, not judgment — delegate it.

@@ -12,6 +12,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/post-compact.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/hook-health-check.sh"
           }
         ]
       }

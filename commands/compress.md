@@ -54,6 +54,11 @@ tags: [{domain-tag}]
 ## Errors & Workarounds
 - What failed and how it was resolved. Include tool/permission denials if they were surprising.
 
+## Tripwire Summary
+- Fired: N times (conditions per fire, e.g. 2×a, 1×c-only)
+- All acknowledged as authorized: yes/no
+- Unacknowledged fires: [list, if any — omit line when none]
+
 ## Pending Tasks
 - [ ] Unfinished work carried forward
 - [x] Completed items (mark with [x] if carried from a prior session and completed here)
@@ -66,6 +71,24 @@ tags: [{domain-tag}]
 
 {Summarise the session turn-by-turn. Each turn is 1–3 sentences. Focus on decisions, discoveries, and pivots — not mechanical steps. Use bold for turn numbers or labels (e.g. **Turn 3 — Audit**). Compress aggressively: 20 turns → ~15 lines is the target.}
 ```
+
+## Step 2b — Populate the Tripwire Summary
+
+The conductor-tripwire Stop hook appends every fire to
+`~/.claude/state/conductor-tripwire.log`, one row per fire with
+`session=<session_id>`. Read this session's rows:
+
+1. **Session ID:** the UUID segment of this session's scratchpad path
+   (`…/<session-id>/scratchpad` — listed in the system prompt).
+2. `grep "session=<session-id>" ~/.claude/state/conductor-tripwire.log` —
+   missing file or zero matches ⇒ report `Fired: 0` and move on.
+3. Fill the section: **Fired** = row count, noting each row's `conditions=`
+   value (`c`-only rows are log-only, no injection — count them but mark
+   them). **Acknowledged** = for every row with `injected=True`, the turn it
+   flagged was either user-instructed inline execution (per the
+   user-override protocol) or otherwise acknowledged in-session; if any
+   injection went unaddressed, answer `no` and list it under
+   **Unacknowledged fires** with timestamp + conditions.
 
 ## Step 3 — Tags
 

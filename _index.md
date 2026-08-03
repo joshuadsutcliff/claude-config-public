@@ -9,6 +9,7 @@ Registry of every tracked asset. Entry point: `AGENT.md`. Design: `docs/ARCHITEC
 | `usage-guard.sh` | `PreToolUse` (Agent\|Workflow), `UserPromptSubmit`, `SessionStart` | 4 modes: `refresh` (warm cache), `inform` (≥70% warn), `block` (deny conductor-model spawns; hard-block ≥90% cap), `pct` (print current usage %). |
 | `session-router.sh` | `UserPromptSubmit` | Classifies prompt LIGHT/MEDIUM/HEAVY via regex; injects a tier prior + policy into context. No model call. |
 | `post-compact.sh` | `SessionStart` | Fires only when `source == "compact"`; re-injects a re-grounding instruction (restate objective, re-read active plan + latest session log, re-confirm pending tasks) after auto-compaction wipes live working state. Fail-open; disable with `POST_COMPACT_OFF=1`. |
+| `hook-health-check.sh` | `SessionStart` | Runs a syntax check (`bash -n`) on every other hook script, confirms `python3` is available, and confirms required state directories/log files exist and are writable; injects a warning into context if anything fails. Fail-open; disable with `HOOK_HEALTH_OFF=1`. |
 
 ## Workers (`agents/`) — delegation targets
 

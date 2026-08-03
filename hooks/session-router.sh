@@ -24,13 +24,22 @@
 
 [ "${SESSION_ROUTER_OFF:-}" = "1" ] && exit 0
 
+# SECRETS_HUB_HOST: if you use a hub-machine architecture (one always-on
+# machine holding the canonical secrets note in its vault, read/appended by
+# other machines over SSH), set this to your hub's SSH alias/hostname
+# substring — the credential reminder below will route to a local-read
+# instruction on that machine and an SSH-read instruction elsewhere. Leave
+# empty to disable the hub-aware branch (reminder stays machine-agnostic).
+SECRETS_HUB_HOST="${SECRETS_HUB_HOST:-}"
+
 INPUT="$(cat)"
 
-python3 - "$INPUT" <<'PYEOF'
-import sys, json, re, os
+python3 - "$INPUT" "$SECRETS_HUB_HOST" <<'PYEOF'
+import sys, json, re, os, subprocess
 
 try:
     raw = sys.argv[1] if len(sys.argv) > 1 else ""
+    hub_host = sys.argv[2] if len(sys.argv) > 2 else ""
     data = json.loads(raw) if raw else {}
     prompt = data.get("prompt") or ""
     if not prompt.strip():
@@ -59,12 +68,45 @@ try:
     ]
     cred_note = ""
     if any(re.search(pat, p) for pat in CRED_PATTERNS):
-        cred_note = (
-            " [CREDENTIAL REMINDER: Before asking for any credential, "
-            "check the private secrets note in the vault — it exists "
-            "specifically so you don't have to ask. Read it first. "
-            "If the credential isn't there, THEN ask.]"
-        )
+        # Hub-aware secrets access: if a hub machine is configured
+        # (SECRETS_HUB_HOST), the canonical secrets note lives only there —
+        # gitignored, never synced. On the hub, read it locally; on every
+        # other machine, read it over SSH. Hostname-lookup failure degrades
+        # to the SSH branch (which also works from the hub itself) rather
+        # than dropping the injection.
+        if hub_host:
+            hostname = ""
+            try:
+                hostname = subprocess.run(
+                    ["hostname"], capture_output=True, text=True
+                ).stdout.strip()
+            except Exception:
+                pass
+            if hub_host in hostname:
+                secrets_instruction = (
+                    "Read the LOCAL file: "
+                    "`<vault>/path/to/private-secrets-note.md`"
+                )
+            else:
+                secrets_instruction = (
+                    "Read via SSH from the hub machine: "
+                    "`ssh %s 'cat <vault>/path/to/private-secrets-note.md'` "
+                    "(if the hub is unreachable, say so and ask the user "
+                    "directly — never guess or use stale data)" % hub_host
+                )
+            cred_note = (
+                " [CREDENTIAL REMINDER: Before asking for any credential, "
+                "check the canonical secrets file. %s — "
+                "it exists specifically so you don't have to ask. "
+                "If the credential isn't there, THEN ask.]" % secrets_instruction
+            )
+        else:
+            cred_note = (
+                " [CREDENTIAL REMINDER: Before asking for any credential, "
+                "check the private secrets note in the vault — it exists "
+                "specifically so you don't have to ask. Read it first. "
+                "If the credential isn't there, THEN ask.]"
+            )
 
     def emit_and_exit(text):
         out = {

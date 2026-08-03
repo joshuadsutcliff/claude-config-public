@@ -15,11 +15,29 @@
 
 [ "${SESSION_TIMER_OFF:-}" = "1" ] && exit 0
 
-# Session-scoped state via a temp file keyed on the session ID or parent PID.
-PPID_KEY="${CLAUDE_SESSION_ID:-$$}"
+# Session-scoped state keyed on the session_id every hook receives in its
+# stdin JSON. CLAUDE_SESSION_ID is not exposed to hooks — a PID-based key
+# gives a fresh PID per hook fire (orphaning one state file per fire), and a
+# CWD-hash fallback shares ONE never-resetting state file across all
+# sessions in a directory. The stdin payload's session_id is the supported,
+# stable-per-session channel.
+INPUT="$(cat)"
+SID=$(printf '%s' "$INPUT" | python3 -c 'import sys, json
+try:
+    print(json.load(sys.stdin).get("session_id", ""))
+except Exception:
+    pass' 2>/dev/null | tr -cd 'a-zA-Z0-9_-' | cut -c1-64)
+if [ -z "${SID:-}" ]; then
+    # Degraded fallback: CWD hash — stable per-directory, shared across
+    # sessions (nudges may not re-fire per session on this path).
+    SID=$(printf '%s' "$PWD" | (md5sum 2>/dev/null || md5 2>/dev/null) | cut -c1-12)
+fi
+[ -z "${SID:-}" ] && SID="fallback"
 STATE_DIR="/tmp/.claude-session-timer"
 mkdir -p "$STATE_DIR" 2>/dev/null
-STATE_FILE="$STATE_DIR/$PPID_KEY"
+# Hygiene: per-session keys accumulate — sweep state older than a day.
+find "$STATE_DIR" -type f -mtime +1 -delete 2>/dev/null
+STATE_FILE="$STATE_DIR/$SID"
 
 # On first fire, record the start time.
 if [ ! -f "$STATE_FILE" ]; then
@@ -33,7 +51,7 @@ ELAPSED_MIN=$(( (NOW - START_TS) / 60 ))
 
 # Count worker failures this session (from a session-scoped counter file).
 FAILURE_COUNT=0
-FAILURE_FILE="/tmp/.claude-worker-failures-$PPID_KEY"
+FAILURE_FILE="/tmp/.claude-worker-failures-$SID"
 if [ -f "$FAILURE_FILE" ]; then
     FAILURE_COUNT=$(wc -l < "$FAILURE_FILE" | tr -d ' ')
 fi
@@ -50,7 +68,7 @@ msg = (
     'ask whether to /wrap and start fresh or continue. Long degraded sessions cost more '
     'per turn and produce lower-quality decisions.'
 ) % (sys.argv[1], sys.argv[2])
-print(json.dumps({'hookSpecificOutput': {'additionalContext': msg}}))" "$ELAPSED_MIN" "$FAILURE_COUNT"
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PostToolUse', 'additionalContext': msg}}))" "$ELAPSED_MIN" "$FAILURE_COUNT"
     else
         python3 -c "
 import json
@@ -59,7 +77,7 @@ msg = (
     'task almost done? Would a /compact help? Should you report status and let the user decide '
     'whether to continue or /wrap? Long sessions degrade rule-compliance and raise per-turn cost.'
 )
-print(json.dumps({'hookSpecificOutput': {'additionalContext': msg}}))"
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PostToolUse', 'additionalContext': msg}}))"
     fi
     exit 0
 fi
@@ -73,7 +91,7 @@ msg = (
     '[session-timer] 45 minutes elapsed. Check: are you still on the original task? '
     'If scope has grown, report what you have and ask the user whether to continue or pivot.'
 )
-print(json.dumps({'hookSpecificOutput': {'additionalContext': msg}}))"
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PostToolUse', 'additionalContext': msg}}))"
     exit 0
 fi
 

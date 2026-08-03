@@ -75,6 +75,10 @@ DEGRADED_FILE="${CACHE_FILE}.degraded"
 # truncation here was the old "-1 despite fresh cache" bug).
 refresh_cache() {
     local lockdir="${CACHE_FILE}.lock"
+    # Self-heal: ~/.cache may not exist on a fresh machine — without this the
+    # lock mkdir fails and refresh silently no-ops, leaving the guard blind at
+    # pct=-1 forever (root cause: fresh machine without ~/.cache).
+    mkdir -p "$(dirname "$CACHE_FILE")" 2>/dev/null
     # mkdir-based lock is POSIX-safe (works on macOS and Linux)
     mkdir "$lockdir" 2>/dev/null || return 0
 

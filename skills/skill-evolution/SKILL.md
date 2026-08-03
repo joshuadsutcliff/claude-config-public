@@ -25,6 +25,14 @@ Log when interaction reveals something durable about how the user communicates o
 These graduate into persistent memory (`user`/`feedback` types) during the evolution pass — the log is the staging area, memory is the destination.
 
 ## Evolution pass (trigger: ≥5 unprocessed entries, or user asks)
+
+**Weekly backstop:** regardless of the unprocessed count, the evolution pass
+MUST run during the first session after a weekly cap reset (when budget is
+freshest). "Defer to next session" cannot cross a reset boundary — if it's
+reset day and there are ANY unprocessed observations, the pass runs at wrap.
+This closes the accumulation loop that lets the queue grow across multiple
+sessions without action.
+
 1. Group entries by target skill / USER.
 2. For each target, draft the minimal change: a rewritten rule, a deletion, a new memory entry, or (rarely) a new skill. Prefer 5-line fixes over rewrites; deletion is a first-class outcome.
 3. **Present the batch to the user for approval before applying** — never autonomous (nobody benchmarks silent skill mutations; regressions hide).

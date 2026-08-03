@@ -103,7 +103,7 @@ TARGET="$(pwd)/System/Claude-Memory"          # synced via the vault repo (alrea
 
 ## Step 3 — Verify
 
-Confirm, for **both** repos: on `main`, tracking `origin/main`, working tree clean, and local `HEAD` == `origin/main` (after a `git fetch`). Confirm `obsidian-git` is in `community-plugins.json`. Confirm gitignored local files survived (`.smart-env/`, secrets, `settings.local.json`). Optionally run a **round-trip test** (create a marker note → push → pull on another machine → delete → confirm it propagates back).
+Confirm, for **both** repos: on `main`, tracking `origin/main`, working tree clean, and local `HEAD` == `origin/main` (after a `git fetch`). Confirm `obsidian-git` is in `community-plugins.json`. Confirm gitignored local files survived (`.smart-env/`, secrets, `settings.local.json`). Run `mkdir -p ~/.cache` — usage-guard's cache home; a fresh machine without it leaves the guard silently blind at pct=-1 (root cause: fresh machine without `~/.cache`; the hook now self-heals too, belt-and-suspenders). Optionally run a **round-trip test** (create a marker note → push → pull on another machine → delete → confirm it propagates back).
 
 Report a tight summary: what was taken-from-origin, what was preserved/pushed as machine-unique, and the final synced HEADs.
 
