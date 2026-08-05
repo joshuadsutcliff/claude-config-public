@@ -20,7 +20,7 @@ Start with **`AGENT.md`** (the operating contract), then **`_index.md`** (asset 
 
 ---
 
-## The system in six diagrams
+## The system in seven diagrams
 
 Six diagrams cover the whole design — what runs where, what is mechanically enforced versus behaviorally expected, and what the enforcement layer measurably changed. They are drawn for both audiences: if you are new to agent orchestration, read each **What it shows** first; if you run agent fleets yourself, the **Why it's built this way** notes carry the design rationale and the incidents behind it.
 
@@ -34,7 +34,7 @@ Six diagrams cover the whole design — what runs where, what is mechanically en
 
 ### 2. Hook enforcement flow — every subagent spawn runs this gauntlet
 
-![Hook enforcement flow diagram](assets/diagrams/diagram-2-hook-flow.png)
+![Hook enforcement flow diagram](assets/diagrams/diagram-2-hook-enforcement.png)
 
 **What it shows:** The gate sequence a subagent spawn must clear. Policy 1 denies any spawn that fails to name an explicit worker model, so nothing silently inherits the expensive conductor model. Policy 2 denies all spawns once usage reaches 90% of the cap. Policy 3 is a mutex that serializes workers touching machine-global GitHub-account state, because concurrent account switches land writes under the wrong identity. M1 is a rate limiter: more than 4 spawns in 5 minutes trips a circuit breaker. Only a spawn that clears all four gates runs — and even then the hook injects the current budget-burn band into context so the delegation decision is made with the price tag visible.
 
@@ -48,9 +48,9 @@ Six diagrams cover the whole design — what runs where, what is mechanically en
 
 **Why it's built this way:** The two expensive failure modes are opposites: burning frontier tokens over-answering a cheap question, and diving into a large job without an approved plan. Both are cheapest to correct before the first token is spent, so the classification happens at prompt-submit time — the one point where the cost of every downstream decision is still zero.
 
-### 4. Conductor field rules — the behavioral layer above the hooks
+### 4. Conductor behavioral rules — the behavioral layer above the hooks
 
-![Conductor field rules diagram](assets/diagrams/diagram-4-field-rules.png)
+![Conductor behavioral rules diagram](assets/diagrams/diagram-4-behavioral-rules.png)
 
 **What it shows:** The rules the conductor follows that hooks cannot mechanically check, grouped by when they bind. Before execution: check the stored secrets before asking the user, grep large files instead of reading them whole, check budget burn before any fan-out. During: a hard ceiling of 2 parallel workers, serialize by default, worker scripts run in sandboxes rather than live repos, and every worker gets a time budget by tier. On failure: a two-strike rule (never dispatch a third worker at the same failed task), a 10-minute stuck rule (report rather than wait silently), and degraded-session detection that recommends a fresh start. User overrides: pace instructions ("slow down", "one at a time") take effect immediately, and an explicit user order to execute inline is honored — but flagged once, so overrides stay visible and cannot silently erode the policy.
 
@@ -58,7 +58,7 @@ Six diagrams cover the whole design — what runs where, what is mechanically en
 
 ### 5. CLAUDE.md lean core — memory as a paging system
 
-![CLAUDE.md lean core diagram](assets/diagrams/diagram-5-claudemd.png)
+![CLAUDE.md lean core diagram](assets/diagrams/diagram-5-claudemd-structure.png)
 
 **What it shows:** The three-tier memory architecture. The always-loaded core file is capped at 8,000 tokens and holds only what every session needs: identity, the behavioral rules, active-project deltas, and — critically — a pointer table (the "memory map") naming which reference note to fetch for which kind of work. Depth lives in those on-demand notes: per-system runbooks, project status ledgers, and a gitignored secrets store. Skills (packaged procedures) load themselves when a situation matches their trigger description rather than sitting in context permanently.
 
@@ -66,11 +66,17 @@ Six diagrams cover the whole design — what runs where, what is mechanically en
 
 ### 6. Before and after — what the enforcement layer measurably changed
 
-![Before and after cost comparison diagram](assets/diagrams/diagram-6-cost-comparison.png)
+![Before and after cost comparison diagram](assets/diagrams/diagram-6-before-after.png)
 
 **What it shows:** The measured effect of turning written rules into enforced ones. Before (July 25): a single runaway session spent $31 in 32 minutes — 36% of a weekly usage cap — with 81% of the spend coming from subagent bursts and the conductor doing $27.87 of the work itself instead of delegating. After (July 26 onward): sessions average $1.46, about 2% of the weekly cap each, with zero 4-plus-parallel bursts; the rate limiter has fired and held, and the heavy-task approval gate has been honored every time it triggered.
 
 **Why it's built this way:** These numbers are the falsifiability of the whole design. Anyone can claim their agent framework saves money; this one keeps the incident that motivated the enforcement layer and the before/after measurements in the open — roughly a 95% reduction in cost per session on comparable work. The raw dollar figures stay because "trust me, it's cheaper" is exactly the kind of unverifiable claim the config bans internally.
+
+### 7. Predictive injections — constraints arrive before generation
+
+![Predictive injection system diagram](assets/diagrams/diagram-7-predictive-injections.png)
+
+Seven pattern-matchers run on every prompt — blanket authorization, minimizing language, inline-override requests, batched asks, remote-host work, sycophancy bait, and irreversible actions. Each match injects its counter-constraint into context ahead of generation, so the model reads the rule before it forms the response instead of being corrected after.
 
 ---
 
