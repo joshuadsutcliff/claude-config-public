@@ -2,7 +2,7 @@
   "origin_id": "claude-config-public",
   "version": "1.0.0",
   "file_count": 65,
-  "aggregate_sha256": "2c3e50f2db5ad56bfd30fd6160521b72c00ba5718ca86ea1fec3332f827d76c3",
+  "aggregate_sha256": "c762d4e2c96ccf23d72348179d2d0f4568821870e8651f86873d4334819e88a8",
   "files": [
     {
       "path": ".gitignore",
@@ -26,8 +26,8 @@
     },
     {
       "path": "_index.md",
-      "sha256": "04e45a50d61704967ae9da5cb0abdf39a5aed3c66654fbaede314853230f31f6",
-      "bytes": 8638
+      "sha256": "47d4b35680a9af582e540525d268e45c0135ffde0e368183004166636445b7db",
+      "bytes": 8939
     },
     {
       "path": "agents/code-generator.md",
@@ -181,8 +181,8 @@
     },
     {
       "path": "hooks/model-swap-detector.sh",
-      "sha256": "eefcb03135640c09ef8550432ef56451fec6696280513162369cd9d1087d3edc",
-      "bytes": 4990
+      "sha256": "89e1c8238fc5df4df4c6ea0b73c583c9f28a422bc70eb9ff72ed867fa33612db",
+      "bytes": 5014
     },
     {
       "path": "hooks/post-compact.sh",

@@ -117,6 +117,7 @@ README carries a provenance comment. May be updated upstream — check for drift
 | File | Function |
 |---|---|
 | `diagrams/diagram-1-architecture.png` … `diagram-6-cost-comparison.png` | The six architecture diagrams embedded in the README's "The system in six diagrams" section. |
+| `skills/efficient-conductor/assets/fable-orchestrator.png`, `fable-orchestrator-dark.png`, `fable-orchestrator.excalidraw` | Diagram assets for the `efficient-conductor` skill (renamed from `efficient-fable`). Filenames deliberately not updated to match: historical names, diagrams still current. |
 
 ## Not included here
 
