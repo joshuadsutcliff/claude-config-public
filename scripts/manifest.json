@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 51,
-  "aggregate_sha256": "86b22799d76a42a060085d5b6f89bf431bc4d0ad604cf5858ccd2a3e04caf6ce",
+  "file_count": 65,
+  "aggregate_sha256": "2c3e50f2db5ad56bfd30fd6160521b72c00ba5718ca86ea1fec3332f827d76c3",
   "files": [
     {
       "path": ".gitignore",
@@ -15,14 +15,19 @@
       "bytes": 3531
     },
     {
+      "path": "CHARTER.md",
+      "sha256": "f382964c4f6ab8a51b4436f1fdedbc451f6fa75c13a574f2b41398bea86a8bcc",
+      "bytes": 13256
+    },
+    {
       "path": "README.md",
-      "sha256": "21a6e5351a540374f309d4655aecf4641e0c2a583e75eefecbe8dd53c8685f36",
-      "bytes": 10413
+      "sha256": "319c27bc9a2c0e1dd94b76b0387e6521908869fe18b19e0006d548b227bc0e4a",
+      "bytes": 20438
     },
     {
       "path": "_index.md",
-      "sha256": "9fd1499ea6e9992e7e24766264b4025821e3d036b6b16353e9d4c0e8da399fc7",
-      "bytes": 6689
+      "sha256": "04e45a50d61704967ae9da5cb0abdf39a5aed3c66654fbaede314853230f31f6",
+      "bytes": 8638
     },
     {
       "path": "agents/code-generator.md",
@@ -45,9 +50,44 @@
       "bytes": 2040
     },
     {
+      "path": "assets/diagrams/diagram-1-architecture.png",
+      "sha256": "66ae161407a5eb1f135d6d5fbbc20f400bfc6c861bbbc7a05c896847b336ae43",
+      "bytes": 147384
+    },
+    {
+      "path": "assets/diagrams/diagram-2-hook-enforcement.png",
+      "sha256": "a23bd976daf2b73f1df23431a8fe0c8acaeb95ef1b4fd2c582a98c9dd0a76cfc",
+      "bytes": 109484
+    },
+    {
+      "path": "assets/diagrams/diagram-3-session-router.png",
+      "sha256": "7db240e1b13cfd1c79ba04462428cd876d54170903ee2f0fdb20e0f6fdb4c7a4",
+      "bytes": 193747
+    },
+    {
+      "path": "assets/diagrams/diagram-4-behavioral-rules.png",
+      "sha256": "4d5960903023c32cedf9e2b6845213e2a0c193cf8dee4286a1dbb7e2dae999d5",
+      "bytes": 95414
+    },
+    {
+      "path": "assets/diagrams/diagram-5-claudemd-structure.png",
+      "sha256": "d15e6c9eec6faade75fda4cbe2b3dc7222efd5fbb03e8aa5862a8e6c2f471f7a",
+      "bytes": 135558
+    },
+    {
+      "path": "assets/diagrams/diagram-6-before-after.png",
+      "sha256": "9fd8100b13863dd95eae3888816b2e262b5017ed305ff17431ff77dadfe779b3",
+      "bytes": 58743
+    },
+    {
+      "path": "assets/diagrams/diagram-7-predictive-injections.png",
+      "sha256": "b673bf923da6cc2f083c0ed968141fed88772fc2500850190970390f1b30efa9",
+      "bytes": 188151
+    },
+    {
       "path": "commands/compress.md",
-      "sha256": "c3d61fa74be18c640d2f9b6a747b3d9251f88b56967685f5adfa34e0e28e3e7b",
-      "bytes": 3510
+      "sha256": "36c84366ba7fc6e75c8a8c201d7db93ddefbce9afe97c8d4d62865ace00298b4",
+      "bytes": 4676
     },
     {
       "path": "commands/daily-note.md",
@@ -81,18 +121,18 @@
     },
     {
       "path": "commands/resume.md",
-      "sha256": "208f24006878e464ddc2dc1ff87c88ab85945eede3cd0933ade34e4af0981da2",
-      "bytes": 2488
+      "sha256": "782aac75be9dd588494d10fa32d2cbb385e7b3d75d870ca56a39f729879ef6c8",
+      "bytes": 4430
     },
     {
       "path": "commands/sync-config.md",
-      "sha256": "88ff60b33a82cf8a3fea45ecd5d325c10cce63feb65fa7488ff76e3a8a824220",
-      "bytes": 6558
+      "sha256": "ba2815b29998210a79c4da53816eb869d94c2379854e44d7e87b5cd7f6766816",
+      "bytes": 7447
     },
     {
       "path": "commands/sync-machine.md",
-      "sha256": "2bd4b048e82670d244019c36a0d824af4f2f6b822811af8c85a01eb8fa984719",
-      "bytes": 10916
+      "sha256": "fee1166b25982ea91a78c50e3d42a9ca2d908cc3a7ed9bd4a070723886c77c0f",
+      "bytes": 11655
     },
     {
       "path": "commands/weekly-review.md",
@@ -101,8 +141,8 @@
     },
     {
       "path": "commands/wrap.md",
-      "sha256": "f952773a1539ce7a87f6f854773adebf497b25c28c73dff02545b851558b2e0e",
-      "bytes": 6026
+      "sha256": "2f71d3417cfddd964fdd93ae09808b16b798739a13e7c062ff7b232373d1a6ec",
+      "bytes": 11297
     },
     {
       "path": "docs/ARCHITECTURE.md",
@@ -116,8 +156,8 @@
     },
     {
       "path": "docs/OBSIDIAN-SETUP.md",
-      "sha256": "be56c810439a3c5ac3a64a18f773bbbe919a44e243061fabfaeeaacac0e3c6d7",
-      "bytes": 8986
+      "sha256": "9a19e01bf67f596f45cc3d7b041d8544134787fd92f2822c808b6a2496404fc9",
+      "bytes": 8994
     },
     {
       "path": "docs/goal-loop-engineering.md",
@@ -125,9 +165,24 @@
       "bytes": 3248
     },
     {
+      "path": "hooks/conductor-inline-guard.sh",
+      "sha256": "52332e9671b1fe55180176c90135be851294a275aa2a0dfa08be12cb8137ffa5",
+      "bytes": 4247
+    },
+    {
       "path": "hooks/conductor-tripwire.sh",
       "sha256": "82f21688d275ecec1fd18f30eaf4dfa56a37c724a11aee81cd06be80c4b9c452",
       "bytes": 8083
+    },
+    {
+      "path": "hooks/hook-health-check.sh",
+      "sha256": "92a09947a4f95c5daba2124fb47d77ae46a00622c8cc08dd29ea02f70b448409",
+      "bytes": 2208
+    },
+    {
+      "path": "hooks/model-swap-detector.sh",
+      "sha256": "eefcb03135640c09ef8550432ef56451fec6696280513162369cd9d1087d3edc",
+      "bytes": 4990
     },
     {
       "path": "hooks/post-compact.sh",
@@ -136,23 +191,38 @@
     },
     {
       "path": "hooks/session-router.sh",
-      "sha256": "9790ffc8edde1a3e7f6b3e921c588c8c9aefadf13e075bdaea37e86f825e6d8f",
-      "bytes": 7909
+      "sha256": "2252ccf9706a20d609a60141f9e51661e2b77251deefa192248ba3953af26008",
+      "bytes": 12565
     },
     {
       "path": "hooks/session-timer.sh",
-      "sha256": "275235d22318eaa94ba69abe1733af42568f431df5f0864f42ccfa30c6599e74",
-      "bytes": 2894
+      "sha256": "42c96f6eef1ae87c56a9bbbdd9e35ef75ff1b715f96749932bd4ba752f4e66b0",
+      "bytes": 3897
     },
     {
       "path": "hooks/usage-guard.sh",
-      "sha256": "4c659844cfaed79a89bf2bcbcd86de578b3c5a1297ee1ffee444af164a295003",
-      "bytes": 22260
+      "sha256": "7bf80bdb442a98524a5fd83dd859a19fb9be81b2091ef827dbb443b621b3c4eb",
+      "bytes": 22709
+    },
+    {
+      "path": "knowledge/THE-STANDARD.jsonl",
+      "sha256": "471dbb2e7c9da9ac5f7f21aa61df00bc19b050056670179fe048652c04504974",
+      "bytes": 60623
     },
     {
       "path": "scripts/build-manifest.py",
       "sha256": "5d10e111e506d7f5445b4e477837a2e7111f9c5d8cd55d33c9975c6676cbd470",
       "bytes": 2548
+    },
+    {
+      "path": "scripts/install.ps1",
+      "sha256": "f7c3c076fbe582de2487388647ef09ba2ed80a32d80066578dfdacace92cde27",
+      "bytes": 5291
+    },
+    {
+      "path": "scripts/install.sh",
+      "sha256": "c8de47d60b98bdbcc7145972b466bed4229fc4500af24a7ce233320ef4cbfe59",
+      "bytes": 5586
     },
     {
       "path": "scripts/verify-integrity.py",
@@ -161,8 +231,8 @@
     },
     {
       "path": "settings.example.json",
-      "sha256": "233280ecdbaee0a888cbefe06304d4493bf2bbdb2b9821684ba9273f7bacfe5f",
-      "bytes": 942
+      "sha256": "c4e86dca1599233363a5ec7f2ac967509554324a92de433d90df1069506626f9",
+      "bytes": 1065
     },
     {
       "path": "skills/consequence-simulation/SKILL.md",
@@ -175,27 +245,27 @@
       "bytes": 2103
     },
     {
-      "path": "skills/efficient-fable/README.md",
-      "sha256": "c49402afc9a7b689e8a4bb4a0ffa8a6e2983974e34974632ddcfb329f8913f54",
-      "bytes": 2999
+      "path": "skills/efficient-conductor/README.md",
+      "sha256": "c3e8d0bcf2adfb3582dd027afca5d0a8eee4630fc09c6dbb5cb8c58d512c338c",
+      "bytes": 2989
     },
     {
-      "path": "skills/efficient-fable/SKILL.md",
-      "sha256": "0eb2a4371a85c43e58dfa30ed4eb4d16fc9cd6c4433aa11de1477988158bbff5",
-      "bytes": 19594
+      "path": "skills/efficient-conductor/SKILL.md",
+      "sha256": "fe65b9ff382d4f812eddc593eb327c4e5f0b94c6d4bd3ad6ed429638b49135c0",
+      "bytes": 34017
     },
     {
-      "path": "skills/efficient-fable/assets/fable-orchestrator-dark.png",
+      "path": "skills/efficient-conductor/assets/fable-orchestrator-dark.png",
       "sha256": "2ef235b84ef1d49a197cbd21599190528ff4bdeccd905360d94ee7f70c337e78",
       "bytes": 111350
     },
     {
-      "path": "skills/efficient-fable/assets/fable-orchestrator.excalidraw",
+      "path": "skills/efficient-conductor/assets/fable-orchestrator.excalidraw",
       "sha256": "201fff8842ab23f01bf673af7a2fe4f170b2acc3bd58265893109985d8f36ac8",
       "bytes": 19562
     },
     {
-      "path": "skills/efficient-fable/assets/fable-orchestrator.png",
+      "path": "skills/efficient-conductor/assets/fable-orchestrator.png",
       "sha256": "444ca9f93f890774b1cd070feafdf921368f9962df6beff5578cd57b99bba8a1",
       "bytes": 111227
     },
@@ -236,8 +306,8 @@
     },
     {
       "path": "skills/skill-evolution/SKILL.md",
-      "sha256": "92384906595a2bd296e91218f74290836c5534209f787b459e0a558f8088e705",
-      "bytes": 3384
+      "sha256": "0acfb32c1f05c5f23359b8cbce8d9668cd5a34e784c076b8a7938d852634fea7",
+      "bytes": 3792
     },
     {
       "path": "skills/stay-within-limits/README.md",

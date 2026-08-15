@@ -10,6 +10,8 @@ Registry of every tracked asset. Entry point: `AGENT.md`. Design: `docs/ARCHITEC
 | `session-router.sh` | `UserPromptSubmit` | Classifies prompt LIGHT/MEDIUM/HEAVY via regex; injects a tier prior + policy into context. No model call. |
 | `post-compact.sh` | `SessionStart` | Fires only when `source == "compact"`; re-injects a re-grounding instruction (restate objective, re-read active plan + latest session log, re-confirm pending tasks) after auto-compaction wipes live working state. Fail-open; disable with `POST_COMPACT_OFF=1`. |
 | `hook-health-check.sh` | `SessionStart` | Runs a syntax check (`bash -n`) on every other hook script, confirms `python3` is available, and confirms required state directories/log files exist and are writable; injects a warning into context if anything fails. Fail-open; disable with `HOOK_HEALTH_OFF=1`. |
+| `conductor-inline-guard.sh` | `PreToolUse` (Bash\|Write\|Edit\|NotebookEdit) | Currently disabled (unconditional `exit 0`): an earlier session-ID-matching approach to block the conductor from writing/executing inline couldn't reliably distinguish conductor calls from worker calls, so it deadlocked worker sessions too. Kept only as a kill-switch surface (`CONDUCTOR_INLINE_OVERRIDE=1`, `CONDUCTOR_INLINE_GUARD_OFF=1`) and for a possible future reliable discriminator; actual zero-write enforcement now lives in `conductor-tripwire.sh` + the `efficient-conductor` skill + CLAUDE.md convention 12. |
+| `model-swap-detector.sh` | `PostToolUse` | Every `MODEL_SWAP_CHECK_INTERVAL` (default 5) tool calls, scans the session transcript JSONL for a change in the assistant `model` field from the session's first model; on a detected swap (one-shot, per-session state file), injects context telling the new model it is now the temporary conductor bound by the full delegation contract and warning it not to assert a cause for the swap or contradict the user about it. Fail-open; disable with `MODEL_SWAP_DETECTOR_OFF=1`. |
 
 ## Workers (`agents/`) — delegation targets
 
@@ -73,7 +75,7 @@ README carries a provenance comment. May be updated upstream — check for drift
 
 | Skill | Use when |
 |---|---|
-| `efficient-fable` | Orchestrating codebase-heavy work with a Fable-class conductor delegating to cheaper subagents. |
+| `efficient-conductor` | Orchestrating codebase-heavy work with a conductor model delegating to cheaper subagents. |
 | `quick-recap` | Installing/following the 🟢/🟡/🔴 end-of-response status-line convention. |
 | `stay-within-limits` | Long-running or parallel work needs to respect 5-hour/weekly usage limits. |
 
@@ -103,6 +105,12 @@ README carries a provenance comment. May be updated upstream — check for drift
 | `DELEGATION-LADDER.md` | Usage-adaptive routing: the 5-tier ladder incl. the free-model tier (Forge/OpenRouter + direct Gemini), routing bands keyed to the live usage signal, and the capability floor. |
 | `goal-loop-engineering.md` | Goal Contracts + Loop Specs wired to the usage proxy. |
 | `OBSIDIAN-SETUP.md` | Claude-facing integration guide: what the vault workflow is, the command/skill reference, and step-by-step instructions for wiring it into a new setup. |
+
+## Knowledge (`knowledge/`)
+
+| File | Function |
+|---|---|
+| `THE-STANDARD.jsonl` | Machine-readable rule set: 82 entries, one compact JSON object per line, each with an id, trigger pattern, tell, rule, and verification command. In this public mirror, each entry's `incidents` array is emptied. |
 
 ## Assets (`assets/`)
 

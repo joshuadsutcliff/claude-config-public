@@ -43,7 +43,7 @@ blank slate.
 | `usage-guard.sh` (hook) | Blocks subagent spawns that would inherit the main-loop model; hard-blocks near the usage cap; warns earlier. | `PreToolUse`, `UserPromptSubmit`, `SessionStart`. |
 | `session-router.sh` (hook) | Classifies each prompt LIGHT/MEDIUM/HEAVY and injects a tier prior. | `UserPromptSubmit`. |
 | `post-compact.sh` (hook) | Re-grounds the model after auto-compaction wipes live working state. | `SessionStart` (only fires on `source == "compact"`). |
-| `efficient-fable` (skill) | Conductor/worker delegation design for token-heavy work. | Auto-invoked; vendored/managed upstream. |
+| `efficient-conductor` (skill) | Conductor/worker delegation design for token-heavy work. | Auto-invoked; vendored/managed upstream. |
 | `quick-recap` (skill) | The 🟢/🟡/🔴 end-of-response status-line convention. | Auto-invoked; vendored/managed upstream. |
 | `stay-within-limits` (skill) | Usage-aware pausing across long/parallel work. | Auto-invoked; vendored/managed upstream. |
 | `code-reviewer` (agent) | Reviews a completed project step against its plan + coding standards. | Invoke after finishing a planned chunk of work. |
@@ -134,6 +134,6 @@ it:
   auto-compaction; harmless otherwise (it's a no-op except right after a compaction event).
 - **Calendar/email MCP connectors for `/daily-note`** — entirely optional; the command degrades
   gracefully (skips the Schedule/Alerts sections) if no connector is configured.
-- **`efficient-fable` / `quick-recap` / `stay-within-limits`** — vendored copies of
+- **`efficient-conductor` / `quick-recap` / `stay-within-limits`** — vendored copies of
   upstream-managed skills. If the user's Claude Code install already provides these (e.g. via a
   plugin), prefer the upstream version over this vendored copy to avoid drift.

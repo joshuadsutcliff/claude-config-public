@@ -175,10 +175,12 @@ try:
 
     sh, sm, sl = hits(HEAVY), hits(MEDIUM), hits(LIGHT)
 
-    if (sh > 0 and words > 40) or words > 180:
+    # HEAVY classification aligned with workflow-plan-gate.sh (2026-08-15):
+    # same thresholds so both hooks agree on what's HEAVY.
+    if (sh > 0 and words > 30) or (sh >= 2 and words > 15) or words > 180:
         tier = "HEAVY"
-    elif sh > 0 and words <= 40:
-        tier = "MEDIUM"  # short prompts with heavy keywords → MEDIUM, not HEAVY
+    elif sh > 0 and words <= 30:
+        tier = "MEDIUM"  # short prompts with 1 heavy keyword → MEDIUM
     elif sl > 0 and sm == 0 and words <= 40:
         tier = "LIGHT"
     elif sm > 0 or words > 70:
@@ -207,15 +209,24 @@ try:
             "Bounded execution work. Delegate the token-heavy lifting (repo/doc scans, "
             "candidate edits, repetitive changes, test/log runs) to a sonnet/haiku worker "
             "(researcher / code-generator / tester) and keep the main loop to framing, "
-            "judging, and relaying. Don't do the heavy lifting yourself."
+            "judging, and relaying. Don't do the heavy lifting yourself.\n\n"
+            "MEDIUM ADVISOR GATE (lighter than HEAVY): You plan and dispatch workers "
+            "yourself (no mandatory advisor planning step). But BEFORE presenting "
+            "completion to the user, call /advisor with a brief summary of what was done "
+            "and ask for a quality check. If the advisor flags issues, fix them (1 "
+            "round max). This is a quality gate, not a planning gate. Skip the advisor "
+            "review only if the task completed in a single worker dispatch with no "
+            "ambiguity in the result."
         ),
         "HEAVY": (
             "HEAVY task detected. You MUST plan before executing. In this turn:\n"
             "1. State the full scope (all files/systems that will be touched, all workers needed).\n"
-            "2. Break the work into numbered atomic steps — each step ≤1 worker spawn and ≤3 files.\n"
-            "3. State which step you will do FIRST.\n"
-            "4. STOP. Do not begin execution. Wait for the user's explicit go.\n"
-            "5. Estimate: ~N workers, ~M minutes, approximate cost if you can infer from similar recent tasks.\n\n"
+            "2. Front-load ALL prerequisites, dependencies, and blockers in a 'Before starting' block. "
+            "A requirement revealed at the step where it bites is a planning failure.\n"
+            "3. Break the work into numbered atomic steps, each step <=1 worker spawn and <=3 files.\n"
+            "4. State which step you will do FIRST.\n"
+            "5. STOP. Do not begin execution. Wait for the user's explicit go.\n"
+            "6. Estimate: ~N workers, ~M minutes, approximate cost if you can infer from similar recent tasks.\n\n"
             "Do NOT begin execution in this response. Planning output only. "
             "If the task is genuinely a single atomic action (one file, one command), "
             "say so and execute it — this gate is for multi-step work, not one-liners. "
@@ -224,7 +235,7 @@ try:
     }
 
     if tier == "HEAVY":
-        msg = ("[session-router] Tier: HEAVY (mechanical plan-then-stop gate — "
+        msg = ("[session-router] Tier: HEAVY (aligned with workflow-plan-gate — "
                "binding; the only escape hatch is the single-atomic-action clause "
                "in the policy itself). Policy: %s%s" % (POLICY[tier], cred_note))
     else:

@@ -65,7 +65,7 @@ Present it compactly, e.g.:
 
 If your setup uses a hub-machine architecture (one always-on machine holding
 the single canonical secrets note in its vault, with other machines
-reading/appending it over SSH — see the `efficient-fable` secrets rule),
+reading/appending it over SSH — see the `efficient-conductor` secrets rule),
 and this session used, received, or discovered any credentials that aren't
 already in that canonical note, push them back now so the central source of
 truth stays current. Skip this step entirely if your setup has no such hub.

@@ -166,9 +166,9 @@ to the researcher agent, not do it inline.
 
 ### Phase 3 — Behavioral layer (recommended but optional)
 
-**Step 4: Install `efficient-fable` skill**
+**Step 4: Install `efficient-conductor` skill**
 
-Copy `skills/efficient-fable/` to `~/.claude/skills/efficient-fable/`.
+Copy `skills/efficient-conductor/` to `~/.claude/skills/efficient-conductor/`.
 
 This is the conductor's operating manual — it defines:
 - The delegation pattern (when to delegate vs. keep inline)

@@ -120,7 +120,7 @@ sensible default), and never overwrites an existing `CLAUDE.md`. Safe to run mor
 | `hooks/` | `usage-guard.sh` (usage-cap + conductor-model enforcement + the M1 spawn-rate limiter), `session-router.sh` (LIGHT/MEDIUM/HEAVY tier router with a binding HEAVY plan-then-stop gate), `conductor-tripwire.sh` (logs execution-shaped conductor output), `session-timer.sh` (PostToolUse hook: advisory 45/90-minute session-length nudges plus a degraded-session escalation at 90+ minutes AND 2+ worker failures; fail-open; `SESSION_TIMER_OFF=1` kill switch), `post-compact.sh` (re-grounds the model after auto-compaction). |
 | `agents/` | Named delegation workers: `researcher`, `code-generator`, `tester`, plus `code-reviewer` (reviews completed work against its plan). |
 | `commands/` | Session lifecycle: `/compress`, `/preserve`, `/resume`, `/wrap`, `/goal`. Vault workflow: `/sync-config`, `/sync-machine`, `/daily-note`, `/inbox-process`, `/meeting-note`, `/new-project`, `/weekly-review`. |
-| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Hand-authored process skills: `grill-me`, `model-council`, `skill-evolution`. Also vendored upstream skills: `efficient-fable`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
+| `skills/` | Hand-authored cognitive-technique skills (auto-invoked): parallel-lens-synthesis, consequence-simulation, detached-judgment, pressure-test, nod-protocol. Hand-authored process skills: `grill-me`, `model-council`, `skill-evolution`. Also vendored upstream skills: `efficient-conductor`, `quick-recap`, `stay-within-limits` (see "Skills" below). |
 | `workflows/` | `phased-review.js` — capped, usage-gated spec-drift review. |
 | `settings.example.json` | Shared hook wiring + `effortLevel` baseline. |
 | `docs/` | `ARCHITECTURE.md` (the layered design), `DELEGATION-LADDER.md` (usage-adaptive routing incl. the free-model tier), `goal-loop-engineering.md` (Goal Contracts + Loop Specs), `OBSIDIAN-SETUP.md` (Claude-facing integration guide for the vault workflow). |
@@ -187,7 +187,7 @@ Three more skills are **vendored** from the upstream Claude Code skills distribu
 full (including assets), marked with a provenance comment in each README, and may drift from
 upstream over time:
 
-- `efficient-fable` — conductor/worker delegation design.
+- `efficient-conductor` — conductor/worker delegation design.
 - `quick-recap` — the 🟢/🟡/🔴 status-line convention.
 - `stay-within-limits` — usage-aware pausing across work waves.
 

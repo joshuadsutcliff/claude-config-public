@@ -6,7 +6,7 @@
 # EXPLICITLY specify sonnet/haiku (the enforced default for token-efficiency),
 # an explicit opus (deliberate heavy delegation per CLAUDE.md rule 12), or a
 # pinned cheap worker. Unspecified/inherited models are always denied.
-# This enforces the efficient-fable delegation design mechanically.
+# This enforces the efficient-conductor delegation design mechanically.
 # (2026-07-12: explicit opus allowed per the user; was previously denied.)
 #
 # auto-burn-check (2026-07-24): on the block-mode ALLOW path (no deny policy fired),
