@@ -1,8 +1,8 @@
 {
   "origin_id": "claude-config-public",
   "version": "1.0.0",
-  "file_count": 65,
-  "aggregate_sha256": "c762d4e2c96ccf23d72348179d2d0f4568821870e8651f86873d4334819e88a8",
+  "file_count": 66,
+  "aggregate_sha256": "6250596bf228b0248d1e75f43f2b565cacd9fcd65bc67a8f108826d93200c1bb",
   "files": [
     {
       "path": ".gitignore",
@@ -26,8 +26,8 @@
     },
     {
       "path": "_index.md",
-      "sha256": "47d4b35680a9af582e540525d268e45c0135ffde0e368183004166636445b7db",
-      "bytes": 8939
+      "sha256": "9e0a194de65ab503e15ec90dc80e6924b9ba35cfbc24fdcafd06eacf544dffd4",
+      "bytes": 9239
     },
     {
       "path": "agents/code-generator.md",
@@ -121,8 +121,8 @@
     },
     {
       "path": "commands/resume.md",
-      "sha256": "782aac75be9dd588494d10fa32d2cbb385e7b3d75d870ca56a39f729879ef6c8",
-      "bytes": 4430
+      "sha256": "6b717a329fb971dc1c9300bc8cddb2b80049b410b9cb2d7745cba3c1988a846c",
+      "bytes": 4813
     },
     {
       "path": "commands/sync-config.md",
@@ -141,8 +141,8 @@
     },
     {
       "path": "commands/wrap.md",
-      "sha256": "2f71d3417cfddd964fdd93ae09808b16b798739a13e7c062ff7b232373d1a6ec",
-      "bytes": 11297
+      "sha256": "91be163a517ddb4ce515257423e31b7c312e1ca1c3720f30371be2c588dd46a8",
+      "bytes": 12868
     },
     {
       "path": "docs/ARCHITECTURE.md",
@@ -165,14 +165,19 @@
       "bytes": 3248
     },
     {
+      "path": "hooks/brevity-gate.sh",
+      "sha256": "64c7e812260e65f1e4d65da01c7476a3c4938b2ecb67915457fcbce885fb3b5b",
+      "bytes": 4667
+    },
+    {
       "path": "hooks/conductor-inline-guard.sh",
       "sha256": "52332e9671b1fe55180176c90135be851294a275aa2a0dfa08be12cb8137ffa5",
       "bytes": 4247
     },
     {
       "path": "hooks/conductor-tripwire.sh",
-      "sha256": "82f21688d275ecec1fd18f30eaf4dfa56a37c724a11aee81cd06be80c4b9c452",
-      "bytes": 8083
+      "sha256": "369c24de038bb0c82d857ad5d837dc71d65b46abfa680558f7fc8c96fc0e863a",
+      "bytes": 10813
     },
     {
       "path": "hooks/hook-health-check.sh",
@@ -201,13 +206,13 @@
     },
     {
       "path": "hooks/usage-guard.sh",
-      "sha256": "7bf80bdb442a98524a5fd83dd859a19fb9be81b2091ef827dbb443b621b3c4eb",
-      "bytes": 22709
+      "sha256": "1a4cb074dfefea52f9ad0711a7dd1063f522948c54387521bf52e3a21897b324",
+      "bytes": 25203
     },
     {
       "path": "knowledge/THE-STANDARD.jsonl",
-      "sha256": "471dbb2e7c9da9ac5f7f21aa61df00bc19b050056670179fe048652c04504974",
-      "bytes": 60623
+      "sha256": "e5ac910ea16a70be8349e450b6185efefe20becc4a5b7d9ebefa1e2c4812faa7",
+      "bytes": 75367
     },
     {
       "path": "scripts/build-manifest.py",
@@ -231,8 +236,8 @@
     },
     {
       "path": "settings.example.json",
-      "sha256": "c4e86dca1599233363a5ec7f2ac967509554324a92de433d90df1069506626f9",
-      "bytes": 1065
+      "sha256": "e585cbf0b81f263447536a218abff1df9c80b84471a6064492ad190a50062bc0",
+      "bytes": 1183
     },
     {
       "path": "skills/consequence-simulation/SKILL.md",
@@ -251,8 +256,8 @@
     },
     {
       "path": "skills/efficient-conductor/SKILL.md",
-      "sha256": "fe65b9ff382d4f812eddc593eb327c4e5f0b94c6d4bd3ad6ed429638b49135c0",
-      "bytes": 34017
+      "sha256": "0ca58a2d15610bfde8f9d67e3bf8b7db373da905c4fa00078fddc71e2233687a",
+      "bytes": 35311
     },
     {
       "path": "skills/efficient-conductor/assets/fable-orchestrator-dark.png",

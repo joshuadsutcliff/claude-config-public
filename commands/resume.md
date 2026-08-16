@@ -54,6 +54,8 @@ giving an explicit task immediately.
 
 Read your orientation note (the who/what/priorities map). This is always required.
 
+Also read your standing open-items note (a running ledger of items waiting on you, waiting externally, or scheduled for a future date). Read every section except any "settled" or "recently closed" section, which is reference-only and need not be surfaced unless asked.
+
 ## Step 2 — Recent session logs
 
 Find the N most recent session logs in your session-logs location (sort by filename descending — if filenames are `YYYY-MM-DD-HH-MM-slug`, lexicographic order = chronological order).
@@ -70,8 +72,8 @@ Give the user a concise summary covering:
 
 1. **Active projects and current status** (from the orientation note + recent logs)
 2. **What was accomplished recently** (from the last 1–2 session logs)
-3. **Pending tasks** — a consolidated list of `[ ]` items from the loaded logs, deduplicated and ordered most-recent first
-4. **Any blockers or time-sensitive items** (renewals, deadlines, carry-forward blockers)
+3. **Pending tasks** — a consolidated list of open items from the standing open-items note, deduplicated against the loaded logs and ordered most-recent first
+4. **Any blockers or time-sensitive items** (renewals, deadlines, carry-forward blockers, plus any overdue "scheduled but not yet due" items from the open-items note)
 
 Keep this tight — 10–20 lines total. The user already knows their projects; they need the delta, not a full briefing.
 

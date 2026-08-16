@@ -250,6 +250,53 @@ print(json.dumps({
         fi
     fi
 
+    # ---- Policy 1.5: opus worker cap — max 1 opus worker per dispatch round (2026-08-15) ----
+    # The parallel ceiling (4 workers/round) is model-agnostic. Without this gate,
+    # the conductor could rationalize spawning 4 opus workers ("reasoning-heavy") in
+    # a single round. This policy mechanically limits opus-model workers to 1 per
+    # rolling window (aligned with iteration-cap's 60s round debounce). Additional
+    # opus workers within the same window are blocked with a clear re-route message.
+    # Override: OPUS_WORKER_CAP_OVERRIDE=1 (set manually for an explicit burst).
+    # Fail-open: log read failure or corrupt file → treated as 0 recent opus spawns.
+    if [ "$tool_name" = "Agent" ] && [ "$model" = "opus" ] && [ "${OPUS_WORKER_CAP_OVERRIDE:-0}" != "1" ]; then
+        OPUS_RATE_WINDOW="${USAGE_GUARD_OPUS_RATE_WINDOW:-60}"
+        OPUS_RATE_MAX="${USAGE_GUARD_OPUS_RATE_MAX:-1}"
+        OPUS_RATE_LOG="${HOME}/.cache/claude-opus-worker-rate.log"
+        mkdir -p "$(dirname "$OPUS_RATE_LOG")" 2>/dev/null
+
+        or_now=$(date +%s)
+        or_cutoff=$(( or_now - OPUS_RATE_WINDOW ))
+        or_recent=0
+        if [ -f "$OPUS_RATE_LOG" ]; then
+            or_kept=$(awk -v c="$or_cutoff" '$1 >= c' "$OPUS_RATE_LOG" 2>/dev/null)
+            if [ -n "$or_kept" ]; then
+                { printf '%s\n' "$or_kept" > "$OPUS_RATE_LOG"; } 2>/dev/null
+                or_recent=$(printf '%s\n' "$or_kept" | grep -c '^[0-9]' 2>/dev/null)
+            else
+                { : > "$OPUS_RATE_LOG"; } 2>/dev/null
+            fi
+            case "$or_recent" in ''|*[!0-9]*) or_recent=0 ;; esac
+        fi
+        if [ "$or_recent" -ge "$OPUS_RATE_MAX" ] 2>/dev/null; then
+            python3 -c "
+import json, sys
+n, mx, win = sys.argv[1], sys.argv[2], sys.argv[3]
+print(json.dumps({
+    'decision': 'block',
+    'reason': (
+        f'Opus worker cap: {n} opus-model worker(s) already dispatched in the last {win}s '
+        f'(max {mx} per dispatch round). This prevents the conductor from rationalizing '
+        'multiple expensive opus workers when sonnet/haiku would suffice. '
+        'Re-route the remaining workers to model: \"sonnet\" (or \"haiku\" for mechanical tasks). '
+        'If this task genuinely needs multiple opus workers, set '
+        'OPUS_WORKER_CAP_OVERRIDE=1 explicitly.'
+    )
+}))" "$or_recent" "$OPUS_RATE_MAX" "$OPUS_RATE_WINDOW" 2>/dev/null
+            exit 0
+        fi
+        { echo "$or_now" >> "$OPUS_RATE_LOG"; } 2>/dev/null
+    fi
+
     # ---- Policy 2: usage cap gate ----
     # Test-mode override (C7 prerequisite): when both USAGE_GUARD_TEST_MODE=1 and
     # USAGE_GUARD_FAKE_PCT=<n> are set, the gate evaluates the fake pct instead of

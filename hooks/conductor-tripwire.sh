@@ -8,8 +8,8 @@
 # shape is deterministic where token volume requires fuzzy classification.
 # See: Areas/Work/AI-Sessions/Kiro/Probes/2026-07-25-Tripwire-Hook-And-Fixtures-Spec.md §1
 #
-# STAGED, NOT WIRED as of authoring — do not add to settings.json until the
-# Kiro conformance review (spec §4) passes and the user has seen a dry-run.
+# WIRED in settings.json → Stop hooks (active since 2026-07-25, escalation
+# added 2026-08-15 after 3x motivated-reasoning dismissals in one session).
 #
 # Flag conditions (any triggers a LOG line; injection requires (a) or (b)):
 #   (a) >=3 Edit/Write/NotebookEdit tool_use calls in the final assistant turn
@@ -19,7 +19,10 @@
 #
 # Response is always observational/non-blocking: never returns a "decision"
 # field, only an optional additionalContext reminder, rate-limited to one
-# injection per 10 minutes per session.
+# injection per 10 minutes per session. ESCALATION (added 2026-08-15): tracks
+# per-session fire count. First flag is advisory. Second flag names the
+# memory-authoring-is-delegated rule and warns about motivated reasoning.
+# Third+ flag is a hard directive: HALT, delegate or report to the user.
 #
 # Kill switch: CONDUCTOR_TRIPWIRE_OFF=1 (exits 0 silently, no log, no state).
 # Fail-open: any parse/read error anywhere below → exit 0, no crash, no log.
@@ -179,12 +182,23 @@ sess_state["consec_flagged"] = new_consec
 flagged = cond_a or cond_b or cond_c
 should_inject = cond_a or cond_b
 
+# ---- escalation counter: how many times has this session triggered an injection? ----
+session_fire_count = int(sess_state.get("session_fire_count", 0) or 0)
+
 now = time.time()
 did_inject = False
 if should_inject:
-    if (now - last_inject_ts) >= 600:
+    # Escalated flags (2nd+) use a shorter cooldown: 120s instead of 600s.
+    # The first flag's 10-min cooldown prevents noise on legitimate authoring
+    # sessions. But once you've been warned once, repeated flags should land
+    # faster to prevent the conductor from burning through multiple inline
+    # turns before the escalation catches up.
+    cooldown = 120 if session_fire_count >= 1 else 600
+    if (now - last_inject_ts) >= cooldown:
         did_inject = True
         sess_state["last_inject_ts"] = now
+        session_fire_count += 1
+        sess_state["session_fire_count"] = session_fire_count
 
 state[session_id] = sess_state
 
@@ -218,13 +232,44 @@ if flagged:
         pass
 
 if did_inject:
-    reminder = (
-        "[conductor-tripwire] Execution-shaped turn detected ("
-        + ",".join([c for c in ["a" if cond_a else "", "b" if cond_b else ""] if c])
-        + "). Bright line: original judgment content inline; moving/collating "
-        "existing content >~10 lines delegates. If this was user-instructed, "
-        "the flag is working as intended."
-    )
+    conditions_str = ",".join([c for c in ["a" if cond_a else "", "b" if cond_b else ""] if c])
+
+    if session_fire_count <= 1:
+        # First flag: advisory (existing behavior)
+        reminder = (
+            "[conductor-tripwire] Execution-shaped turn detected ("
+            + conditions_str
+            + "). Bright line: original judgment content inline; moving/collating "
+            "existing content >~10 lines delegates. If this was user-instructed, "
+            "the flag is working as intended."
+        )
+    elif session_fire_count == 2:
+        # Second flag: escalated warning, names the memory
+        reminder = (
+            "[conductor-tripwire — ESCALATED, flag #" + str(session_fire_count) + " this session] "
+            "This is the SECOND execution-shaped flag this session ("
+            + conditions_str
+            + "). Per memory-authoring-is-delegated: repeated dismissals of the same "
+            "flag on the same behavior means the flag is right and the reasoning "
+            "is motivated. STOP rationalizing. If this work is memory authoring, "
+            "knowledge-ledger entries, index lines, or any file-write that could be "
+            "briefed to a worker: you are REQUIRED to delegate it. The conductor "
+            "does not play an instrument. Re-read the no-overscoping and "
+            "memory-authoring-is-delegated conventions before your next action."
+        )
+    else:
+        # Third+ flag: hard directive, no ambiguity
+        reminder = (
+            "[conductor-tripwire — VIOLATION, flag #" + str(session_fire_count) + " this session] "
+            "HALT. You have triggered " + str(session_fire_count) + " execution-shape flags "
+            "in one session. This is not advisory. You are violating the delegation "
+            "mandate and ignoring memory-authoring-is-delegated. DO NOT write another "
+            "file inline. DO NOT dismiss this flag. Your next action must be either: "
+            "(1) dispatch a worker for the remaining writes, or (2) stop and report "
+            "that you cannot complete without inline execution and explain why. "
+            "There is no third option."
+        )
+
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "Stop",

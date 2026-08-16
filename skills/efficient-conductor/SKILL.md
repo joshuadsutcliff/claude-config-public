@@ -88,6 +88,7 @@ User prompt → Conductor (active model)
 
 - **Mechanical** (scales with task size): repetitive edits, read-only scans, routine commands, log reduction. Route to **Haiku/Sonnet workers**.
 - **Reasoning-heavy** (scales with decision complexity): deep analysis, adversarial review, gnarly debugging, judgment-heavy writes (memories, playbook, knowledge entries). Route to **Opus workers**.
+- **Opus worker cap (mechanical, 2026-08-15):** max 1 opus-model worker per dispatch round (60s rolling window, enforced by the usage-guard hook). The remaining slots in a round must use sonnet or haiku. This prevents the conductor from rationalizing multiple expensive opus workers when the routing ladder already covers the common case. Override is an explicit manual flag, set by the user only.
 - **When uncertain: delegate.** A single one-off read or light command is fine inline. Anything that becomes a pattern (batch edits, scan loops, repeated runs) goes to a worker.
 
 **Proportionality (2026-08-12):** Match response weight to input weight. A one-sentence instruction gets a one-sentence acknowledgment and the minimum worker dispatches to implement it. Brief one worker with the complete set of writes. One dispatch, not five inline edits.
@@ -217,6 +218,7 @@ only the context it needs:
 - **Multi-host / serialized-ops briefs pin a fixed cadence, not polling (2026-08-04).** State: "NEVER stand by or wait for a poll; per host: launch → `sleep 60` ONCE → verify ONCE → next host." Without it, workers yield "standing by for the next poll" with real work undone (recurred 2×).
 - **Amendment authoring (2026-08-04): an amendment that enumerates steps must re-list ALL remaining scope, or state "original brief stands except X."** A step-list amendment silently dropped a host from the original brief; the worker flagged it, but the omission was the conductor's.
 - **Run the brief's own static checks against its mandated content before dispatch (2026-08-09, obs #121).** A verification command that fails on compliant output is a brief defect, not a worker problem — one brief mandated "$0 software" stat cards while its own mandatory check required `grep -cE '\$[0-9]'` = 0; the worker had to resolve the conductor's contradiction. Dry-run each static check mentally (or literally) against what the brief demands the worker produce.
+- **A brief carrying a "change nothing else" clause must enumerate the changes that ARE wanted in that same file, or state explicitly that the named change is the only intended one (2026-08-16).** A protective negative constraint silently outranks unstated positive scope, and the worker will comply exactly while the wanted changes never land. Related verification habit: if a worker reports zero matches for the thing it was asked to change, treat that as a scope-check signal rather than a no-op.
 
 ## Conductor Field Rules
 
@@ -361,6 +363,7 @@ only the context it needs:
   but do not wait for it — internalize the check. "Oh yeah, I just realized
   you asked me to do X and I didn't" after reporting done is the failure
   case this rule exists to prevent.
+- **Queue execution work that arises while the agent slot is occupied; dispatch it as the NEXT worker rather than absorbing it inline (2026-08-16).** If it genuinely must run inline, say so explicitly at the time rather than retroactively. Since concurrent sonnet/haiku workers are already permitted up to a small ceiling, this binds mainly on Opus work, where the limit is one worker at a time.
 
 ## Vetting Delegated Work
 

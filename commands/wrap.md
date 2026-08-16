@@ -20,21 +20,27 @@ It does **NOT** run `/sync-machine` — that's one-time-per-machine onboarding, 
 - `/wrap` — full intelligent run.
 - `/wrap no-preserve` — skip the preserve-check (still compress + sync-config).
 - `/wrap no-config` — skip sync-config even if it drifted.
-- `/wrap --fast` — lightweight close, the counterpart of `/resume --fast`: the
-  pair exists for closing a session to immediately reopen a fresh one (new
-  token counter) and pick up right where you left off, so the log must carry
-  enough meaning for that pickup. Trim the boilerplate, keep everything that
-  carries meaning. (Renamed from `--quick`; treat `--quick` as a deprecated
-  alias.)
-  - Preserve-check still runs, but as a quick scan: surface only clearly
-    durable items; if none, say so in one line and move on — no fishing.
-  - The session log is a compact cut of the full template, not a stub:
-    frontmatter + a TL;DR-grade Quick Reference (dense enough to meaningfully
-    reconstruct the session later) + Decisions Made + Key Learnings + Errors
-    & Workarounds + Files Modified + Pending Tasks. Drop the raw-log section
-    and any section that would be empty. Aim ~30–40 lines.
-  - Everything conditional still runs as normal — sync-config included,
-    still gated on the multi-machine flag + drift per Step 0 below.
+- `/wrap --fast` — a HARD brevity gate, the counterpart of `/resume --fast`:
+  the pair exists for closing a session to immediately reopen a fresh one
+  (new token counter) and pick up right where you left off. When `--fast` is
+  passed, the entire wrap collapses to three steps and nothing else:
+  1. One status check across both repos (vault + config). If secrets or
+     machine-local files show up as staged, hold those back silently.
+  2. Commit and push any dirty tracked files in both repos. No assessment
+     table, no hold-back negotiation, no preserve-candidate review, no
+     flywheel scan. Use a sensible commit message drawn from the session
+     context.
+  3. Write the session log: a compact cut, not a stub. Frontmatter plus a
+     dense summary (Quick Reference, Decisions, Learnings, Files Modified,
+     Pending Tasks). Drop the raw-log section and any section that would be
+     empty. No multi-paragraph assessments, no tables, no "needs your call"
+     prompts unless a secret is about to be pushed. Cap total tool calls at
+     5. The word "fast" means fast.
+  - If the config repo carries a standing model/effort default that differs
+    from what the core file documents, push it anyway unless it's an obvious
+    session-debug artifact (e.g. a one-off model switch for testing).
+    Standing architecture changes are not session-local.
+  - (Renamed from `--quick`; treat `--quick` as a deprecated alias.)
 - Any other text → passed to `/compress` as a **slug hint** for the session-log filename.
 
 ## Step 0 — Assess & show a plan (do this first)
@@ -148,6 +154,16 @@ the default.
 - If a slug hint was passed as args, use it for the log slug.
 - This push carries any CLAUDE.md / depth-note edits made in Step 1.
 
+### 2a: Carry-forward to the standing open-items note (runs after the session log is written)
+
+Once the session log exists, read its Pending Tasks section:
+- For each unchecked item, check whether it is already tracked on the standing open-items note or on a project status ledger.
+- Append any item that is on neither to the appropriate section of the open-items note ("waiting on you" if it needs your decision or action, "waiting externally" if it's blocked on something outside the system, "scheduled" if it has a known trigger date, otherwise "in flight").
+- Each appended line carries its date, a self-contained description, and a link back to the session log that raised it.
+- Update the "last consolidated" marker at the top of the open-items note to today's date.
+- Never delete items from the open-items note during `/wrap` — removal happens only during a deliberate consolidation pass. Resolved items move to a "recently closed" section.
+- Session logs remain append-only and keep their Pending Tasks section unchanged. The open-items note is a copy destination, not a move destination.
+
 ## Step 3 — Sync-config  — multi-machine only; skip if the flag is absent, `no-config`, clean, or not onboarded
 
 - Skip this step entirely if `~/.claude/multi-machine` doesn't exist (single-machine setup — the default).
@@ -159,6 +175,7 @@ the default.
 End with one consolidated summary:
 - **Preserved:** what was routed where (or "nothing").
 - **Compressed:** session-log filename + one-line outcome + vault push status.
+- **Carried forward:** N items appended to the standing open-items note (or "none").
 - **Config:** commits pulled/pushed, or "clean — skipped".
 - **Deferred / blocked:** offline pushes, merge conflicts to resolve, or `/sync-machine` needed.
 - Honor the `quick-recap` red/yellow/green status-line convention.
