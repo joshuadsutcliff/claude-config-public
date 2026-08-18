@@ -190,7 +190,7 @@ try:
     else:
         tier = "MEDIUM"
 
-    # LIGHT injects nothing — brevity lives in standing rules (Kiro adjudication 2026-07-21)
+    # LIGHT injects nothing — brevity lives in standing rules (adjudicated 2026-07-21)
     # — except the credential reminder, which fires regardless of tier.
     if tier == "LIGHT":
         if cred_note:

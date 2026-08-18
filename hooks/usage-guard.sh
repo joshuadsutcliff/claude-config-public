@@ -49,7 +49,7 @@ BURNCHECK_REFRESH_TIMEOUT="${USAGE_GUARD_BURNCHECK_REFRESH_TIMEOUT:-5}"
 # Tune via USAGE_GUARD_COST_LIMIT if /usage and the proxy drift apart.
 COST_LIMIT="${USAGE_GUARD_COST_LIMIT:-250}"
 
-# M1 spawn-rate limiter (2026-07-26, Kiro battery postmortem — mechanical control).
+# M1 spawn-rate limiter (2026-07-26, battery postmortem — mechanical control).
 # Hard-denies Agent/Workflow spawns beyond SPAWN_RATE_MAX within a rolling
 # SPAWN_RATE_WINDOW. The log is MACHINE-GLOBAL (not per-session): burst
 # parallelism across concurrent sessions is exactly the failure mode the pct
@@ -329,7 +329,7 @@ print(json.dumps({
     fi
 
     # ---- Policy 3: gh-auth mutex — gh active account is machine-global; prose rule
-    # failed 2026-07-20, hook-enforced per Kiro adjudication 2026-07-21 ----
+    # failed 2026-07-20, hook-enforced per adjudication 2026-07-21 ----
     # Narrow check: only Agent/Workflow spawns whose prompt touches gh credential
     # state. Any parse failure here falls through to ALLOW (fail-open) — this must
     # never be the reason a legitimate spawn is blocked.
@@ -399,7 +399,7 @@ print(json.dumps({
         fi
     fi
 
-    # ---- Policy 3.5: M1 hard spawn-rate limiter (2026-07-26, Kiro battery postmortem) ----
+    # ---- Policy 3.5: M1 hard spawn-rate limiter (2026-07-26, battery postmortem) ----
     # Runs AFTER the other deny policies so only spawns that would actually proceed
     # are counted. Denied attempts are NOT appended to the log, so retrying a denied
     # spawn cannot extend the lockout. Semantics: at most SPAWN_RATE_MAX allowed

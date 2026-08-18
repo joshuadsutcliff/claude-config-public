@@ -4,9 +4,8 @@
 # Purpose: catch rationalized inline execution by the conductor ("managing AND
 # playing") that the bait battery structurally cannot — a brief-then-judge turn
 # has ~0-1 main-loop mutations; an execution turn has many. Deviates from a
-# PostToolUse/token-count design (Kiro's original proposal) because tool-call
+# PostToolUse/token-count design (an earlier proposal) because tool-call
 # shape is deterministic where token volume requires fuzzy classification.
-# See: Areas/Work/AI-Sessions/Kiro/Probes/2026-07-25-Tripwire-Hook-And-Fixtures-Spec.md §1
 #
 # WIRED in settings.json → Stop hooks (active since 2026-07-25, escalation
 # added 2026-08-15 after 3x motivated-reasoning dismissals in one session).
@@ -235,39 +234,40 @@ if did_inject:
     conditions_str = ",".join([c for c in ["a" if cond_a else "", "b" if cond_b else ""] if c])
 
     if session_fire_count <= 1:
-        # First flag: advisory (existing behavior)
+        # First flag: advisory, classify-then-act
         reminder = (
             "[conductor-tripwire] Execution-shaped turn detected ("
             + conditions_str
-            + "). Bright line: original judgment content inline; moving/collating "
-            "existing content >~10 lines delegates. If this was user-instructed, "
-            "the flag is working as intended."
+            + "). Standing rule: execution delegates regardless of size. "
+            "Classify this turn: was it conductor work (original judgment authored "
+            "for the first time) or execution (producing/moving content that already "
+            "exists or is mechanically derivable)? If execution, delegate it now. "
+            "If conductor work, cite the definition line that covers it."
         )
     elif session_fire_count == 2:
-        # Second flag: escalated warning, names the memory
+        # Second flag: escalated, demands classification
         reminder = (
             "[conductor-tripwire — ESCALATED, flag #" + str(session_fire_count) + " this session] "
-            "This is the SECOND execution-shaped flag this session ("
+            "Second execution-shaped flag this session ("
             + conditions_str
-            + "). Per memory-authoring-is-delegated: repeated dismissals of the same "
-            "flag on the same behavior means the flag is right and the reasoning "
-            "is motivated. STOP rationalizing. If this work is memory authoring, "
-            "knowledge-ledger entries, index lines, or any file-write that could be "
-            "briefed to a worker: you are REQUIRED to delegate it. The conductor "
-            "does not play an instrument. Re-read the no-overscoping and "
-            "memory-authoring-is-delegated conventions before your next action."
+            + "). Classify this turn against the closed definitions: "
+            "EXECUTION (producing/moving content that already exists or is "
+            "mechanically derivable) vs CONDUCTOR WORK (original judgment "
+            "authored for the first time). If execution: this is a breach of "
+            "the standing rule. Report it to the user in this turn and delegate the "
+            "work. If conductor work: cite the specific definition line. "
+            "Acknowledging this flag without classifying does not discharge it."
         )
     else:
-        # Third+ flag: hard directive, no ambiguity
+        # Third+ flag: hard directive
         reminder = (
-            "[conductor-tripwire — VIOLATION, flag #" + str(session_fire_count) + " this session] "
-            "HALT. You have triggered " + str(session_fire_count) + " execution-shape flags "
-            "in one session. This is not advisory. You are violating the delegation "
-            "mandate and ignoring memory-authoring-is-delegated. DO NOT write another "
-            "file inline. DO NOT dismiss this flag. Your next action must be either: "
-            "(1) dispatch a worker for the remaining writes, or (2) stop and report "
-            "that you cannot complete without inline execution and explain why. "
-            "There is no third option."
+            "[conductor-tripwire — HALT, flag #" + str(session_fire_count) + " this session] "
+            "You have triggered " + str(session_fire_count) + " execution-shape flags "
+            "in one session. Classify each against the closed definitions. If ANY "
+            "flagged turn was execution: you are in breach. Your next action must be "
+            "either (1) dispatch a worker for the remaining writes, or (2) stop and "
+            "report to the user why you cannot complete without inline execution. "
+            "A task instruction from the user is not an inline-execution license."
         )
 
     print(json.dumps({

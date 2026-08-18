@@ -47,6 +47,71 @@
             "command": "bash ~/.claude/hooks/usage-guard.sh block"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/target-reverify-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/no-tty-guard.sh pretool"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/repeat-dispatch-guard.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Agent|Workflow|TaskOutput",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/verify-lead-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/config-apply-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/ps51-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/docker-apparmor-guard.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/no-tty-guard.sh stop"
+          }
+        ]
       }
     ]
   }
