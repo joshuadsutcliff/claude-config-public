@@ -25,4 +25,4 @@ Construct the strongest possible case against your current position or recommend
 A structured block with each step labeled. The final locked or revised position must be a single unambiguous sentence. Do not hedge into vagueness to avoid commitment.
 
 ---
-*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff — github.com/cameronpsutcliff/compound-ai-operating-standards.*
+*Adapted from Compound AI Operating Standards (CC BY 4.0): github.com/cameronpsutcliff/compound-ai-operating-standards.*

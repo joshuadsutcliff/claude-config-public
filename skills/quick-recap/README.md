@@ -1,7 +1,5 @@
 # /quick-recap
 
-<!-- Vendored from the upstream Claude Code skills distribution; may be updated upstream. -->
-
 Make the agent's work state obvious at the end of every response.
 
 `/quick-recap` adds a small red/yellow/green status footer convention. It answers

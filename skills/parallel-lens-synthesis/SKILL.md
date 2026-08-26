@@ -25,4 +25,4 @@ Generate multiple independent framings of a problem — each developed in isolat
 A structured response with one labeled section per lens, a steelman block, a red-team block, and a synthesis conclusion. End with a one-line verdict and open questions if any remain.
 
 ---
-*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff — github.com/cameronpsutcliff/compound-ai-operating-standards.*
+*Adapted from Compound AI Operating Standards (CC BY 4.0): github.com/cameronpsutcliff/compound-ai-operating-standards.*

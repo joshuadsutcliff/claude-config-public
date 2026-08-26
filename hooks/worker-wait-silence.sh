@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 # worker-wait-silence.sh — Claude Code PostToolUse hook (matcher: Agent|Workflow|TaskOutput)
-# Injects a silence instruction after every worker dispatch, so the conductor
-# does not narrate the wait with filler status messages.
+# Suppresses filler narration around worker dispatches.
 #
-# Problem: The conductor model fills dead air between dispatch and worker return with progress
-# narration ("Waiting on results." / "Worker still running." / "I'll wait for
-# the completion notifications.") that adds no value and clutters the output.
+# Problem patterns this hook kills:
+#   1. Wait narration: "Waiting on results." / "Worker still running."
+#   2. Dispatch announcements: "Dispatched." / "Go received. Dispatching X."
+#   3. Intent announcements: "Two issues to handle. Verifying now."
+#      (announcing what you're about to do instead of doing it and reporting)
 #
-# Solution: inject a constraint immediately after each dispatch. The model sees
-# it before producing its next output token.
+# The rule: after a dispatch or worker return, the next user-visible output
+# is either a synthesized result, a decision point requiring the user's input,
+# or silence. Never a status announcement, never "I'm about to do X."
 #
 # Kill switch: WORKER_WAIT_SILENCE_OFF=1
 # Fail-open: any error exits 0 with no injection.
 
 [ "${WORKER_WAIT_SILENCE_OFF:-0}" = "1" ] && exit 0
 
-echo "[WORKER DISPATCH COMPLETE] Wait silently. Do not narrate the wait, do not report worker status, do not produce filler messages while workers run. Your next output is the synthesized result after workers return. If multiple workers are outstanding, wait for all of them before producing output unless one returns information that changes the plan."
+echo "[SILENCE] No filler. Do not announce dispatches, do not narrate waits, do not state what you are about to do. Your next user-visible output is either a result (synthesized findings), a decision point (something the user must rule on), or nothing. 'Dispatched.' is filler. 'Go received.' is filler. 'Verifying now.' is filler. Act, then report the outcome."
 exit 0

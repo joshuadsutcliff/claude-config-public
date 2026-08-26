@@ -26,4 +26,4 @@ A premortem plus second-order-effects analysis: assume the plan has shipped and 
 A structured block: premortem list, effects tree (can be indented), mitigations table, and a final go/no-go sentence with conditions.
 
 ---
-*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff — github.com/cameronpsutcliff/compound-ai-operating-standards.*
+*Adapted from Compound AI Operating Standards (CC BY 4.0): github.com/cameronpsutcliff/compound-ai-operating-standards.*

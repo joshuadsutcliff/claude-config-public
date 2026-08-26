@@ -25,4 +25,4 @@ Counter sycophancy and anchoring by explicitly separating "what the user wants t
 A structured block with each step labeled. The separated verdict and final position must be explicit, not buried. Disagreement with the user is acceptable and expected when warranted.
 
 ---
-*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff — github.com/cameronpsutcliff/compound-ai-operating-standards.*
+*Adapted from Compound AI Operating Standards (CC BY 4.0): github.com/cameronpsutcliff/compound-ai-operating-standards.*

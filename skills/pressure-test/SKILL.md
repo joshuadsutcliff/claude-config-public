@@ -29,4 +29,4 @@ Adversarial critique of a proposal, claim, or design across a fixed set of lense
 A table or labeled list of findings per lens with severity tags, followed by a one-paragraph verdict and recommended next action.
 
 ---
-*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff — github.com/cameronpsutcliff/compound-ai-operating-standards.*
+*Adapted from Compound AI Operating Standards (CC BY 4.0): github.com/cameronpsutcliff/compound-ai-operating-standards.*

@@ -1,7 +1,5 @@
 # /stay-within-limits
 
-<!-- Vendored from the upstream Claude Code skills distribution; may be updated upstream. -->
-
 Keep long-running agent work inside model and account usage windows.
 
 `/stay-within-limits` gives coding agents a lightweight budget loop for broad,

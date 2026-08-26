@@ -24,6 +24,10 @@ Rules:
 - Put the status line at the very end of the response.
 - Do not add `---`, spacer lines, or any content after the status line.
 
+## Hard Detail Cap
+
+**Hard detail cap:** after the TL;DR, the detail section is ≤8 lines unless the user asked for depth. Pre-send self-check (mandatory): count the lines below the TL;DR. If over 8, cut or move the overflow to a file/session log and reference it. Report length is a graded metric worth tracking across sessions.
+
 ## Installer Behavior
 
 This convention is only automatic when it is present in project or user
