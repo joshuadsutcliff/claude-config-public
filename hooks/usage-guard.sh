@@ -7,21 +7,50 @@
 # an explicit opus (deliberate heavy delegation per CLAUDE.md rule 12), or a
 # pinned cheap worker. Unspecified/inherited models are always denied.
 # This enforces the efficient-conductor delegation design mechanically.
-# (2026-07-12: explicit opus allowed per the user; was previously denied.)
+# (2026-07-12: explicit opus allowed by owner decision; was previously denied.)
 #
 # auto-burn-check (2026-07-24): on the block-mode ALLOW path (no deny policy fired),
 # inject the current burn signal + routing band into the model's context via
 # PreToolUse additionalContext, cooldown-gated, so a fan-out never happens blind.
 #
+# USAGE SOURCE (2026-09-03, Claude Code: rewired off the retired external
+# cost-proxy tool onto the statusline JSON cache, per the Kiro usage-guard-rewire
+# design). The guard no longer estimates anything and no longer touches the
+# network. It reads Claude Code's REAL metered rate-limit percentages out of a
+# local JSON cache written by hooks/statusline-usage.sh (Job A3):
+#   ${USAGE_GUARD_USAGE_FILE:-~/.claude/state/claude-usage.json}
+#   { five_hour, five_hour_resets_at, seven_day, seven_day_resets_at,
+#     fable_weekly, context, captured_at }
+# Percentages are integers; fable_weekly/context may be JSON null. A read that is
+# missing, unparseable, or older than USAGE_GUARD_USAGE_MAX_AGE yields -1 on the
+# affected dimensions, and -1 NEVER blocks: the usage layer is fail-open,
+# absolutely. (`context` is read by the statusline only; the guard ignores it.)
+#
 # Wired in ~/.claude/settings.json:
-#   SessionStart   → refresh (async)
+#   SessionStart   → refresh (retained no-op; the statusline hook owns the cache)
 #   UserPromptSubmit → inform
 #   PreToolUse Agent|Workflow → block
 
 MODE="${1:-block}"
-CACHE_FILE="${HOME}/.cache/claude-usage-guard.json"
-CACHE_TTL="${USAGE_GUARD_CACHE_SECS:-180}"
+
+# ---- usage source (2026-09-03, Claude Code, per Kiro usage-guard-rewire design) ----
+# The SOLE input to the usage layer. Written by hooks/statusline-usage.sh; this
+# script only ever READS it, never writes it. MAX_AGE is deliberately generous
+# (1h): the writer refreshes at most every 30s while a session is live, so a file
+# older than an hour means no session has been active recently and the numbers are
+# not worth gating on. Past that age we go -1 (unavailable) rather than act on
+# stale data: being blind and fail-open is safer than being confidently wrong.
+USAGE_FILE="${USAGE_GUARD_USAGE_FILE:-${HOME}/.claude/state/claude-usage.json}"
+USAGE_MAX_AGE="${USAGE_GUARD_USAGE_MAX_AGE:-3600}"
+
+# Hard-block thresholds, one per dimension. five_hour and seven_day are GENERAL
+# windows: either one at/over its own threshold stops ALL delegation (Policy 2).
+# fable_weekly is a DISPATCH-SCOPED quota: it gates only Agent calls whose model
+# is literally "fable" (Policy 2.5) and must never stop a sonnet/haiku/opus worker
+# or a Workflow, because those draw on entirely different budgets.
 BLOCK_PCT="${USAGE_GUARD_BLOCK_PCT:-90}"
+BLOCK_PCT_7D="${USAGE_GUARD_BLOCK_PCT_7D:-90}"
+BLOCK_PCT_FABLE="${USAGE_GUARD_BLOCK_PCT_FABLE:-90}"
 WARN_PCT="${USAGE_GUARD_WARN_PCT:-70}"
 CHEAP_WORKERS="researcher|code-generator|tester|code-reviewer"
 
@@ -30,176 +59,164 @@ CHEAP_WORKERS="researcher|code-generator|tester|code-reviewer"
 # disables the whole feature (silent allow), same convention as other *_OFF vars.
 BURNCHECK_COOLDOWN="${USAGE_GUARD_BURNCHECK_COOLDOWN:-120}"
 BURNCHECK_STATE_FILE="${HOME}/.cache/claude-usage-guard-burncheck.ts"
-# Genuine degradation (refresh attempted and still failed) is rare and persistent —
-# a much longer, separate cooldown avoids repeating the same noisy alarm every
-# normal-band interval. (2026-07-24, field-report fix: routine TTL expiry was being
-# misreported as degradation because burncheck never attempted a refresh itself.)
+# An unavailable signal is rare and persistent: a much longer, separate cooldown
+# keeps that alarm from repeating at every normal-band interval. (2026-09-03: with
+# the external tool gone there is no refresh to attempt and no failure to
+# distinguish, so "unavailable" now means exactly one thing: the local usage
+# cache is missing, unreadable, or stale.)
 BURNCHECK_DEGRADED_COOLDOWN="${USAGE_GUARD_BURNCHECK_DEGRADED_COOLDOWN:-900}"
 BURNCHECK_DEGRADED_STATE_FILE="${HOME}/.cache/claude-usage-guard-burncheck-degraded.ts"
-# Hard bound on the synchronous self-heal refresh attempted before declaring the
-# burn signal unavailable — this runs inside a PreToolUse hook and must never stall
-# a delegation on a hung/broken ccusage.
-BURNCHECK_REFRESH_TIMEOUT="${USAGE_GUARD_BURNCHECK_REFRESH_TIMEOUT:-5}"
 
-# Cost cap for the active 5-hour window, in USD — the proxy denominator.
-# ccusage reports per-block cost but NOT the plan's true limit, so we approximate
-# the 5h ceiling with a configurable cost budget. Calibrated 2026-06-18 against
-# /usage: an active block at $5.17 read as ~2% used → 5h cap ≈ $250.
-# This is an ESTIMATE; the authoritative number is Claude Code's /usage command.
-# Tune via USAGE_GUARD_COST_LIMIT if /usage and the proxy drift apart.
-COST_LIMIT="${USAGE_GUARD_COST_LIMIT:-250}"
 
-# M1 spawn-rate limiter (2026-07-26, battery postmortem — mechanical control).
+# M1 spawn-rate limiter (2026-07-26, Kiro battery postmortem — mechanical control).
 # Hard-denies Agent/Workflow spawns beyond SPAWN_RATE_MAX within a rolling
 # SPAWN_RATE_WINDOW. The log is MACHINE-GLOBAL (not per-session): burst
 # parallelism across concurrent sessions is exactly the failure mode the pct
-# proxy cannot see. Override for an explicitly user-authorized burst:
+# proxy cannot see. Override for an explicitly owner-authorized burst:
 # SPAWN_RATE_OVERRIDE=1 (per-session env var, never set by the model).
 SPAWN_RATE_MAX="${USAGE_GUARD_SPAWN_RATE_MAX:-4}"
 SPAWN_RATE_WINDOW="${USAGE_GUARD_SPAWN_RATE_WINDOW:-300}"
 SPAWN_RATE_LOG="${HOME}/.cache/claude-spawn-rate.log"
 
-# ccusage version spec. Pinned to a MAJOR (not @latest) so a breaking change to
-# the `blocks --json` schema can't silently land and make the parser fail-open
-# (which would disable the cap guard without warning). Bump deliberately after
-# verifying the schema. Override with USAGE_GUARD_CCUSAGE_SPEC.
-CCUSAGE_SPEC="${USAGE_GUARD_CCUSAGE_SPEC:-ccusage@20}"
-# Marker written when ccusage fails to run, so `inform` can surface the degraded
-# (fail-open) state instead of the guard silently going blind.
-DEGRADED_FILE="${CACHE_FILE}.degraded"
+# ---------- usage read (2026-09-03, Claude Code: replaces the old pair of
+# external-tool refresh + cached-percentage reader, per the Kiro
+# usage-guard-rewire design) ----------
+# Sets U_5H / U_7D / U_FABLE from $USAGE_FILE. Each is an integer percentage, or
+# -1 meaning "unavailable" (the same sentinel the old cached reader used), so every
+# existing "-1 never blocks" comparison still reads naturally.
+#
+# FAIL-OPEN IS ABSOLUTE. Missing file, unreadable file, empty file, invalid JSON,
+# missing keys, non-integer values, an absent/non-numeric captured_at, a
+# captured_at in the future (clock skew), an age past USAGE_MAX_AGE, or no python3
+# on the box at all → all three go -1. This function never errors, never exits
+# non-zero, and never puts anything on stdout beyond the three values its own
+# caller consumes. A JSON null on fable_weekly poisons ONLY fable_weekly; the
+# general windows stay usable, because one dispatch-scoped quota going dark is no
+# reason to blind the cap gate.
+#
+# No network, no npx, no subprocess other than python3. A local file read cannot
+# hang, which is why the old bounded self-heal/timeout machinery is gone entirely.
+read_usage() {
+    U_5H=-1
+    U_7D=-1
+    U_FABLE=-1
 
-# ---------- cache refresh (fail-open: a broken ccusage must not block work) ----------
-# Writes to a temp file and atomically moves into place ONLY on valid output.
-# Never truncates the existing cache: an in-flight lock, a ccusage failure, or a
-# no-active-block result must leave the last good cache intact (a redirect-at-callsite
-# truncation here was the old "-1 despite fresh cache" bug).
-refresh_cache() {
-    local lockdir="${CACHE_FILE}.lock"
-    # Self-heal: ~/.cache may not exist on a fresh machine — without this the
-    # lock mkdir fails and refresh silently no-ops, leaving the guard blind at
-    # pct=-1 forever (root cause: fresh machine without ~/.cache).
-    mkdir -p "$(dirname "$CACHE_FILE")" 2>/dev/null
-    # mkdir-based lock is POSIX-safe (works on macOS and Linux)
-    mkdir "$lockdir" 2>/dev/null || return 0
-
-    trap 'rmdir "$lockdir" 2>/dev/null' EXIT
-
-    data=$(npx -y "$CCUSAGE_SPEC" blocks --json 2>/dev/null) || {
-        : > "$DEGRADED_FILE" 2>/dev/null   # tracking degraded — surfaced by `inform`
-        rmdir "$lockdir" 2>/dev/null; return 0;
-    }
-    rm -f "$DEGRADED_FILE" 2>/dev/null      # ccusage ran → clear any prior degraded mark
-
-    local tmp="${CACHE_FILE}.tmp.$$"
-    python3 - "$data" "$COST_LIMIT" > "$tmp" <<'EOF'
+    _ru_out=$(python3 - "$USAGE_FILE" "$USAGE_MAX_AGE" 2>/dev/null <<'PYEOF'
 import sys, json, time
 
-data_str   = sys.argv[1]
+def as_int(v):
+    # JSON null, strings, bools, anything unexpected -> -1 for THAT dimension only.
+    if isinstance(v, bool):
+        return -1
+    if isinstance(v, int):
+        return v
+    if isinstance(v, float):
+        return int(round(v))
+    return -1
+
+five = seven = fable = -1
 try:
-    cost_limit = float(sys.argv[2])
+    try:
+        max_age = int(float(sys.argv[2]))
+    except Exception:
+        max_age = 3600
+    with open(sys.argv[1]) as f:
+        d = json.load(f)
+    if not isinstance(d, dict):
+        raise ValueError('not a JSON object')
+    cap = d.get('captured_at')
+    if isinstance(cap, bool) or not isinstance(cap, (int, float)):
+        raise ValueError('captured_at missing or non-numeric')
+    age = int(time.time()) - int(cap)
+    if age < 0 or age > max_age:
+        raise ValueError('stale, or future-dated by clock skew')
+    five  = as_int(d.get('five_hour'))
+    seven = as_int(d.get('seven_day'))
+    fable = as_int(d.get('fable_weekly'))
 except Exception:
-    cost_limit = 0.0
+    five = seven = fable = -1
 
-try:
-    data = json.loads(data_str)
-except Exception:
-    sys.exit(0)
+print('%d %d %d' % (five, seven, fable))
+PYEOF
+    ) || _ru_out=""
 
-blocks = data if isinstance(data, list) else data.get('blocks', [])
-if not blocks:
-    sys.exit(0)
-
-active = next((b for b in blocks if b.get('isActive')), None)
-if not active:
-    sys.exit(0)
-
-# Proxy = consumed cost of the active 5h block as a share of the configured cap.
-# (Cost, not raw totalTokens: ccusage sums cache-read tokens at full weight, which
-#  badly overstates usage vs. /usage's cost/usage-weighted metric.) Denominator is
-# an absolute budget — NOT the max across historical blocks, which made any
-# record-setting active block read as ~100% regardless of the real limit.
-cur_cost = active.get('costUSD') or 0.0
-pct = int(round(cur_cost * 100 / cost_limit)) if cost_limit > 0 else -1
-
-print(json.dumps({
-    "pct": pct,
-    "cost": round(cur_cost, 2),
-    "cost_limit": cost_limit,
-    "ts": int(time.time()),
-}))
-EOF
-
-    if [ -s "$tmp" ]; then
-        mv -f "$tmp" "$CACHE_FILE"
-    else
-        rm -f "$tmp"
+    # Shape-check before splitting: python3 absent gives an empty string, and
+    # anything that is not digits/spaces/minus is discarded wholesale.
+    case "$_ru_out" in
+        ''|*[!0-9\ -]*) _ru_out="" ;;
+    esac
+    if [ -n "$_ru_out" ]; then
+        # set -- inside a function rebinds only the FUNCTION's positional params.
+        set -- $_ru_out
+        U_5H="${1:--1}"
+        U_7D="${2:--1}"
+        U_FABLE="${3:--1}"
     fi
-    rmdir "$lockdir" 2>/dev/null
+
+    # Final numeric sanity: a non-numeric value must degrade to -1, never error.
+    [ "$U_5H"    -eq "$U_5H"    ] 2>/dev/null || U_5H=-1
+    [ "$U_7D"    -eq "$U_7D"    ] 2>/dev/null || U_7D=-1
+    [ "$U_FABLE" -eq "$U_FABLE" ] 2>/dev/null || U_FABLE=-1
+    # Collapse any negative value onto the single -1 sentinel.
+    [ "$U_5H"    -lt 0 ] 2>/dev/null && U_5H=-1
+    [ "$U_7D"    -lt 0 ] 2>/dev/null && U_7D=-1
+    [ "$U_FABLE" -lt 0 ] 2>/dev/null && U_FABLE=-1
     return 0
 }
 
-# ---------- read pct from cache (fail-open → -1 if stale/missing) ----------
-get_pct() {
-    if [ ! -f "$CACHE_FILE" ]; then
-        echo "-1"
-        return
+# ---------- max of the two GENERAL windows (2026-09-03, Claude Code) ----------
+# Ignores -1 dimensions; prints -1 only when BOTH are unavailable. fable_weekly is
+# deliberately not an input: it is a dispatch-scoped quota, not a general burn
+# signal, and must never move the routing band or the pct contract.
+usage_max() {
+    _um_a="$1"
+    _um_b="$2"
+    _um_m=-1
+    if [ "$_um_a" -ge 0 ] 2>/dev/null; then
+        _um_m="$_um_a"
     fi
-    python3 - "$CACHE_FILE" "$CACHE_TTL" <<'EOF'
-import sys, json, time
-
-cache_path = sys.argv[1]
-ttl        = int(sys.argv[2])
-
-try:
-    with open(cache_path) as f:
-        d = json.load(f)
-    age = int(time.time()) - d.get('ts', 0)
-    if age < ttl:
-        print(d.get('pct', -1))
-    else:
-        print(-1)
-except Exception:
-    print(-1)
-EOF
+    if [ "$_um_b" -ge 0 ] 2>/dev/null && [ "$_um_b" -gt "$_um_m" ] 2>/dev/null; then
+        _um_m="$_um_b"
+    fi
+    echo "$_um_m"
 }
 
 # ---------- modes ----------
 case "$MODE" in
 
   pct)
-    # Manual/stay-within-limits check: self-heal a stale or missing cache with a
-    # synchronous refresh (hooks use `block`/`inform`, which stay fast + fail-open).
-    pct=$(get_pct)
-    if [ "$pct" = "-1" ]; then
-        refresh_cache
-        pct=$(get_pct)
-    fi
-    echo "$pct"
+    # Contract (relied on by ~/.claude/commands/goal.md for goal-loop stop
+    # conditions): a single integer on stdout, nothing else, exit 0. Prints the
+    # max of the two general windows, or -1 when neither is available.
+    # (2026-09-03: the old self-heal refresh retry is gone. There is nothing left
+    # to refresh, and a -1 here now means the cache itself is missing or stale.)
+    read_usage
+    usage_max "$U_5H" "$U_7D"
     ;;
 
   refresh)
-    refresh_cache &
-    ;;
-
-  refresh_sync)
-    # Internal mode, not part of the documented interface: a BLOCKING refresh_cache
-    # call, invoked recursively (via `bash "$0" refresh_sync`, wrapped in `timeout`
-    # by burncheck) so it can be hard-time-bounded from the outside without
-    # duplicating pct mode's self-heal logic.
-    refresh_cache
+    # Retained no-op (2026-09-03, Claude Code, per Kiro usage-guard-rewire design).
+    # hooks/statusline-usage.sh is now the SOLE writer of the usage cache, so this
+    # guard has nothing to refresh and does no work here. The arm is kept only
+    # because settings.json still wires it at SessionStart, and an unrecognised
+    # mode falls through to the *) arm below, which exits 1 with a stderr message.
+    # Explicit success instead of an accidental error on every session start.
+    exit 0
     ;;
 
   inform)
-    if [ -f "$DEGRADED_FILE" ]; then
+    # (2026-09-03, Claude Code: reads the metered percentages; the old degraded
+    # marker and the cost-cap/approximation language are gone with the estimator.)
+    read_usage
+    i_pct=$(usage_max "$U_5H" "$U_7D")
+    if [ "$i_pct" -ge "$WARN_PCT" ] 2>/dev/null; then
+        i_dim="7-day"
+        if [ "$U_5H" -ge 0 ] 2>/dev/null && [ "$U_5H" = "$i_pct" ]; then
+            i_dim="5-hour"
+        fi
         cat <<EOF
-[usage-guard] NOTICE: usage tracking is DEGRADED — \`$CCUSAGE_SPEC\` failed to run, so the cap guard is fail-open (the 90% hard-block will NOT fire). Check npx/ccusage availability; this clears automatically on the next successful refresh.
-EOF
-    fi
-    pct=$(get_pct)
-    if [ "$pct" -ge "$WARN_PCT" ] 2>/dev/null; then
-        cat <<EOF
-[usage-guard] WARNING: ~${pct}% of the estimated 5-hour cost cap (\$${COST_LIMIT}; warn at ${WARN_PCT}%).
-This is an approximation — confirm with Claude Code's /usage before throttling. If they disagree, tune USAGE_GUARD_COST_LIMIT. Prefer small waves near the cap.
+[usage-guard] WARNING: ${i_dim} usage window at ${i_pct}% (warn at ${WARN_PCT}%; hard block at ${BLOCK_PCT}% 5-hour / ${BLOCK_PCT_7D}% 7-day).
+This is Claude Code's own metered rate-limit percentage, not an estimate. Prefer small waves near the cap.
 EOF
     fi
     ;;
@@ -226,6 +243,7 @@ print(d.get('tool_input', {}).get('subagent_type', ''))
         case "$model" in
             sonnet|haiku) is_allowed=true ;;
             opus) is_allowed=true ;;  # explicit opt-in only: deliberate heavy delegation (CLAUDE.md rule 12)
+            fable) is_allowed=true ;;  # explicit opt-in: frontier worker, 2026-08-28 (Fable-as-worker capability)
         esac
         if echo "$subagent_type" | grep -qE "^($CHEAP_WORKERS)$"; then
             is_allowed=true
@@ -240,6 +258,7 @@ print(json.dumps({
         'Conductor-model subagent denied. '
         'Agent calls must specify model explicitly: \"sonnet\" or \"haiku\" (the token-efficient default), '
         '\"opus\" only for deliberate heavy delegation (deep reviews, gnarly debugging), '
+        '\"fable\" only for deliberate frontier-tier delegation (explicit opt-in, never inherited), '
         'or use a pinned cheap worker via subagent_type (researcher / code-generator / tester / code-reviewer). '
         'Unspecified models inherit the conductor and are always denied — '
         'the conductor/manager model runs in the main loop only. '
@@ -250,13 +269,14 @@ print(json.dumps({
         fi
     fi
 
-    # ---- Policy 1.5: opus worker cap — max 1 opus worker per dispatch round (2026-08-15) ----
+    # Fable worker rate cap: deferred, revisit if Fable workers become routine (2026-08-28)
+    # ---- Policy 1.5: opus worker cap — max 1 opus worker per dispatch round (2026-08-15, Kiro analysis) ----
     # The parallel ceiling (4 workers/round) is model-agnostic. Without this gate,
     # the conductor could rationalize spawning 4 opus workers ("reasoning-heavy") in
     # a single round. This policy mechanically limits opus-model workers to 1 per
     # rolling window (aligned with iteration-cap's 60s round debounce). Additional
     # opus workers within the same window are blocked with a clear re-route message.
-    # Override: OPUS_WORKER_CAP_OVERRIDE=1 (set manually for an explicit burst).
+    # Override: OPUS_WORKER_CAP_OVERRIDE=1 (the owner sets this manually for an explicit burst).
     # Fail-open: log read failure or corrupt file → treated as 0 recent opus spawns.
     if [ "$tool_name" = "Agent" ] && [ "$model" = "opus" ] && [ "${OPUS_WORKER_CAP_OVERRIDE:-0}" != "1" ]; then
         OPUS_RATE_WINDOW="${USAGE_GUARD_OPUS_RATE_WINDOW:-60}"
@@ -288,8 +308,8 @@ print(json.dumps({
         f'(max {mx} per dispatch round). This prevents the conductor from rationalizing '
         'multiple expensive opus workers when sonnet/haiku would suffice. '
         'Re-route the remaining workers to model: \"sonnet\" (or \"haiku\" for mechanical tasks). '
-        'If this task genuinely needs multiple opus workers, set '
-        'OPUS_WORKER_CAP_OVERRIDE=1 explicitly.'
+        'If this task genuinely needs multiple opus workers, the owner sets '
+        'OPUS_WORKER_CAP_OVERRIDE=1 himself.'
     )
 }))" "$or_recent" "$OPUS_RATE_MAX" "$OPUS_RATE_WINDOW" 2>/dev/null
             exit 0
@@ -297,109 +317,122 @@ print(json.dumps({
         { echo "$or_now" >> "$OPUS_RATE_LOG"; } 2>/dev/null
     fi
 
-    # ---- Policy 2: usage cap gate ----
-    # Test-mode override (C7 prerequisite): when both USAGE_GUARD_TEST_MODE=1 and
-    # USAGE_GUARD_FAKE_PCT=<n> are set, the gate evaluates the fake pct instead of
-    # the real cache value. Either var unset → byte-identical to prior behavior.
-    p2_test_mode=0
-    if [ "${USAGE_GUARD_TEST_MODE:-0}" = "1" ] && [ -n "${USAGE_GUARD_FAKE_PCT:-}" ]; then
-        p2_test_mode=1
-        pct="$USAGE_GUARD_FAKE_PCT"
+    # ---- usage read + test harness (2026-09-03, Claude Code: rewired off the
+    # retired external cost-proxy tool onto the statusline JSON cache, per the
+    # Kiro usage-guard-rewire design) ----
+    # Resolved ONCE here and reused by Policy 2, Policy 2.5 and Policy 4, so the
+    # three gates can never disagree about what the numbers were on this dispatch.
+    #
+    # Test harness: active only when USAGE_GUARD_TEST_MODE=1 AND at least one of
+    # the three fake vars is set. Each dimension is independently fakeable, and an
+    # UNSET fake dimension reads 0 (fresh/idle), NOT the real cache value and NOT
+    # -1. That is what lets one dimension be exercised in isolation without the
+    # live numbers leaking into the test. With USAGE_GUARD_TEST_MODE unset, no
+    # test-mode code path executes at all and behaviour is a plain cache read.
+    ug_test_mode=0
+    if [ "${USAGE_GUARD_TEST_MODE:-0}" = "1" ] && { [ -n "${USAGE_GUARD_FAKE_PCT:-}" ] || [ -n "${USAGE_GUARD_FAKE_PCT_7D:-}" ] || [ -n "${USAGE_GUARD_FAKE_PCT_FABLE:-}" ]; }; then
+        ug_test_mode=1
+        U_5H="${USAGE_GUARD_FAKE_PCT:-0}"
+        U_7D="${USAGE_GUARD_FAKE_PCT_7D:-0}"
+        U_FABLE="${USAGE_GUARD_FAKE_PCT_FABLE:-0}"
     else
-        pct=$(get_pct)
+        read_usage
     fi
-    if [ "$pct" -ge "$BLOCK_PCT" ] 2>/dev/null; then
+
+    # ---- Policy 2: usage cap gate for general windows (5-hour AND 7-day) ----
+    # Either general window at/over its own threshold stops delegation. These are
+    # real metered percentages now, not a cost proxy, so the number quoted in the
+    # deny text is the same number Claude Code's /usage reports.
+    # -1 (unavailable) NEVER blocks: every comparison is guarded on ">= 0" first,
+    # and each test is 2>/dev/null so a junk threshold env var fails the test
+    # rather than erroring its way into a deny. The guard must not brick
+    # delegation on its own bookkeeping.
+    p2_trip_5h=0
+    p2_trip_7d=0
+    if [ "$U_5H" -ge 0 ] 2>/dev/null && [ "$U_5H" -ge "$BLOCK_PCT" ] 2>/dev/null; then
+        p2_trip_5h=1
+    fi
+    if [ "$U_7D" -ge 0 ] 2>/dev/null && [ "$U_7D" -ge "$BLOCK_PCT_7D" ] 2>/dev/null; then
+        p2_trip_7d=1
+    fi
+    if [ "$p2_trip_5h" = "1" ] || [ "$p2_trip_7d" = "1" ]; then
         python3 -c "
 import json, sys
-pct = int(sys.argv[1])
-block = int(sys.argv[2])
-test_mode = sys.argv[3] == '1'
-prefix = '[TEST-MODE] ' if test_mode else ''
+h5, d7, b5, b7 = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+t5, t7 = sys.argv[5] == '1', sys.argv[6] == '1'
+prefix = '[TEST-MODE] ' if sys.argv[7] == '1' else ''
+tripped = []
+if t5:
+    tripped.append(f'5-hour window at {h5}% (block threshold {b5}%)')
+if t7:
+    tripped.append(f'7-day window at {d7}% (block threshold {b7}%)')
+if len(tripped) == 2:
+    head = 'Usage cap gate: BOTH general windows are over threshold: ' + '; '.join(tripped) + '. '
+else:
+    head = 'Usage cap gate: ' + tripped[0] + '. '
+print(json.dumps({
+    'decision': 'block',
+    'reason': (
+        prefix + head +
+        'Pause delegation and resume when the window clears. '
+        'Run: bash ~/.claude/hooks/usage-guard.sh pct to check the current level. '
+        'Do NOT absorb delegation work into the main loop — wait and re-dispatch.'
+    )
+}))" "$U_5H" "$U_7D" "$BLOCK_PCT" "$BLOCK_PCT_7D" "$p2_trip_5h" "$p2_trip_7d" "$ug_test_mode"
+        exit 0
+    fi
+
+    # ---- Policy 2.5: Fable weekly quota gate (2026-09-03, Claude Code, per Kiro
+    # usage-guard-rewire design) ----
+    # SCOPE IS THE WHOLE POINT. This fires ONLY for an Agent dispatch whose model
+    # is literally "fable". Fable draws on its own weekly quota; a saturated Fable
+    # quota says nothing about sonnet/haiku/opus headroom, so it must never stop
+    # those workers and must never touch a Workflow call. The remedy is therefore
+    # RE-ROUTE THIS ONE WORKER, not "pause delegation": that is Policy 2's job,
+    # and conflating the two would strand the conductor with nowhere to send work.
+    # $model is set inside Policy 1's tool_name = Agent branch above and persists
+    # (the same bash-variable-persistence precedent Policy 1.5 relies on). It is
+    # empty when tool_name is not Agent, which the model = fable test excludes.
+    # -1 (unavailable) NEVER blocks.
+    if [ "$tool_name" = "Agent" ] && [ "$model" = "fable" ]; then
+        p25_trip=0
+        if [ "$U_FABLE" -ge 0 ] 2>/dev/null && [ "$U_FABLE" -ge "$BLOCK_PCT_FABLE" ] 2>/dev/null; then
+            p25_trip=1
+        fi
+        if [ "$p25_trip" = "1" ]; then
+            python3 -c "
+import json, sys
+pct, thr = sys.argv[1], sys.argv[2]
+prefix = '[TEST-MODE] ' if sys.argv[3] == '1' else ''
 print(json.dumps({
     'decision': 'block',
     'reason': (
         prefix +
-        f'Usage cap gate: at {pct}% of cap proxy (block threshold: {block}%). '
-        'Pause delegation and resume when usage drops. '
-        'Run: bash ~/.claude/hooks/usage-guard.sh pct to check current level. '
-        'Do NOT absorb delegation work into the main loop — wait and re-dispatch.'
+        f'Fable weekly quota gate: the Fable 7-day quota is at {pct}% '
+        f'(block threshold {thr}%). This gate is scoped to THIS worker only: '
+        'sonnet, haiku and opus draw on separate budgets and are unaffected. '
+        'Re-issue this same dispatch with model: \"sonnet\" (or \"haiku\" for '
+        'mechanical work, \"opus\" if it is genuinely reasoning-heavy). '
+        'Do NOT pause delegation overall and do NOT absorb the work into the '
+        'main loop: only the Fable routing choice is blocked. '
+        'Run: bash ~/.claude/hooks/usage-guard.sh pct for the general windows.'
     )
-}))" "$pct" "$BLOCK_PCT" "$p2_test_mode"
-        exit 0
-    fi
-
-    # ---- Policy 3: gh-auth mutex — gh active account is machine-global; prose rule
-    # failed 2026-07-20, hook-enforced per adjudication 2026-07-21 ----
-    # Narrow check: only Agent/Workflow spawns whose prompt touches gh credential
-    # state. Any parse failure here falls through to ALLOW (fail-open) — this must
-    # never be the reason a legitimate spawn is blocked.
-    if [ "$tool_name" = "Agent" ] || [ "$tool_name" = "Workflow" ]; then
-        prompt_text=$(python3 -c "
-import json, sys
-try:
-    d = json.loads(sys.argv[1])
-    print(d.get('tool_input', {}).get('prompt', '') or '')
-except Exception:
-    print('')
-" "$input" 2>/dev/null)
-
-        if [ -n "$prompt_text" ] && echo "$prompt_text" | grep -qE 'gh auth (switch|login)' 2>/dev/null; then
-            LOCK_DIR="${HOME}/.claude/locks"
-            LOCK_FILE="${LOCK_DIR}/gh-auth.lock"
-            mkdir -p "$LOCK_DIR" 2>/dev/null
-
-            # Atomic acquire via mkdir (same pattern as refresh_cache): a bare
-            # mtime-check-then-touch is TOCTOU — two same-message spawns both read
-            # "no lock" and both pass (Opus review 2026-07-21). mkdir admits exactly
-            # one; losers must prove the lock stale to pass. The lock is a DIRECTORY
-            # now; a legacy file lock from the old code is aged out the same way.
-            lock_stat_age() {
-                python3 -c "
-import os, time, sys
-try:
-    print(int(time.time() - os.path.getmtime(sys.argv[1])))
-except Exception:
-    print(9999999)
-" "$LOCK_FILE" 2>/dev/null
-            }
-            deny_gh_mutex() {
-                python3 -c "
-import json
-print(json.dumps({
-    'decision': 'block',
-    'reason': (
-        'gh-auth mutex: another gh-credential-touching agent spawned <10 min ago. '
-        \"gh's active account is machine-global — serialize. Wait out the 10-min \"
-        'window (the lock auto-expires) and retry, or continue other work meanwhile. '
-        '(Manual lock removal is classifier-blocked for the conductor; the user can '
-        'remove ~/.claude/locks/gh-auth.lock to release early.)'
-    )
-}))" 2>/dev/null
-                exit 0
-            }
-
-            if ! mkdir "$LOCK_FILE" 2>/dev/null; then
-                lock_age=$(lock_stat_age)
-                case "$lock_age" in ''|*[!0-9]*) lock_age=9999999 ;; esac
-                if [ "$lock_age" -lt 600 ] 2>/dev/null; then
-                    deny_gh_mutex
-                fi
-                # Stale (or unstattable) — clear and re-acquire. If another spawn
-                # wins the re-acquire, its lock reads fresh → block; if the lock
-                # still can't be created/statted (broken dir), fail OPEN → allow.
-                rm -rf "$LOCK_FILE" 2>/dev/null
-                if ! mkdir "$LOCK_FILE" 2>/dev/null; then
-                    lock_age=$(lock_stat_age)
-                    case "$lock_age" in ''|*[!0-9]*) lock_age=9999999 ;; esac
-                    if [ "$lock_age" -lt 600 ] 2>/dev/null; then
-                        deny_gh_mutex
-                    fi
-                fi
-            fi
+}))" "$U_FABLE" "$BLOCK_PCT_FABLE" "$ug_test_mode"
+            exit 0
         fi
     fi
 
-    # ---- Policy 3.5: M1 hard spawn-rate limiter (2026-07-26, battery postmortem) ----
+    # ---- Policy 3: gh-auth mutex — REMOVED 2026-08-26 (single-account consolidation) ----
+    # This policy previously created a 10-minute lock (~/.claude/locks/gh-auth.lock)
+    # and DENIED any Agent/Workflow spawn whose prompt touched `gh auth switch|login`
+    # while another such spawn's lock was still fresh. It existed because gh's active
+    # account is machine-global and two concurrent account-switching workers could race.
+    # The setup consolidated onto a single GitHub account; the second account is
+    # deprecated. With only one account there is nothing to switch between and no race
+    # to guard against, so the lock/deny mechanic is disabled. The purely advisory
+    # reminder in gh-auth-guard.sh (a separate hook, unchanged) is kept.
+
+    # ---- Policy 3.5: M1 hard spawn-rate limiter (2026-07-26, Kiro battery postmortem) ----
     # Runs AFTER the other deny policies so only spawns that would actually proceed
     # are counted. Denied attempts are NOT appended to the log, so retrying a denied
     # spawn cannot extend the lockout. Semantics: at most SPAWN_RATE_MAX allowed
@@ -432,7 +465,7 @@ print(json.dumps({
         f'(max {mx}, machine-global across ALL sessions). This is a mechanical circuit breaker '
         'from the 2026-07-25 battery postmortem — it does not negotiate. Do NOT retry in a loop '
         'and do NOT absorb the work into the main loop. Wait for the window to clear, or ask '
-        'the user to explicitly authorize a burst (they set SPAWN_RATE_OVERRIDE=1 themselves).'
+        'the owner to explicitly authorize a burst (they set SPAWN_RATE_OVERRIDE=1 themselves).'
     )
 }))" "$sr_recent" "$SPAWN_RATE_MAX" "$SPAWN_RATE_WINDOW" 2>/dev/null
             exit 0
@@ -444,44 +477,29 @@ print(json.dumps({
     # Reached only when no deny policy above fired (a delegation is about to proceed).
     # Fail-open, always: any error in this block must fall through to a silent allow,
     # never a block and never corrupted output. Everything is wrapped + stderr-swallowed.
+    #
+    # (2026-09-03, Claude Code, per Kiro usage-guard-rewire design: the band is now
+    # driven by the MAX of the two general windows read from the statusline JSON
+    # cache, and the injected text names WHICH window is binding. fable_weekly is
+    # excluded from banding: it is dispatch-scoped, not a burn signal. The old
+    # bounded self-heal refresh, its background watchdog and its timeout var are
+    # DELETED: a local file read cannot hang, so there is nothing to time-bound and
+    # nothing to retry. -1 here now means exactly "the local usage cache is missing
+    # or stale", with no second guess to make about it.)
     if [ "${USAGE_GUARD_BURNCHECK_OFF:-0}" != "1" ]; then
         {
-            # Test-mode override (C7 prerequisite, 2026-07-25): when BOTH vars are
-            # set, band selection uses the fake pct instead of the real one, and
-            # the injected text is prefixed "[TEST-MODE]" so it can never be
-            # mistaken for a real signal. Either var unset → byte-identical to
-            # prior behavior (bc_test_mode stays 0, nothing below changes).
-            bc_test_mode=0
-            if [ "${USAGE_GUARD_TEST_MODE:-0}" = "1" ] && [ -n "${USAGE_GUARD_FAKE_PCT:-}" ]; then
-                bc_test_mode=1
-            fi
+            # ug_test_mode was resolved once above, with U_5H/U_7D already faked,
+            # so band selection needs no separate test-mode plumbing here: it only
+            # reuses the flag to prefix the injected text "[TEST-MODE]", so a fake
+            # signal can never be mistaken for a real one.
+            bc_test_mode="$ug_test_mode"
+            bc_pct=$(usage_max "$U_5H" "$U_7D")
 
-            bc_pct="$pct"
-            if [ "$bc_test_mode" = "1" ]; then
-                bc_pct="$USAGE_GUARD_FAKE_PCT"
-            elif [ "$bc_pct" = "-1" ]; then
-                # -1 just means "cache missing/stale per TTL" — that's routine (any
-                # session running >CACHE_TTL with no refresh hits this every time),
-                # NOT genuine degradation. Attempt one bounded synchronous self-heal
-                # (the same refresh_cache `pct` mode already calls) before concluding
-                # the signal is truly unavailable. Hard-timeout so a hung/broken
-                # ccusage can never stall this PreToolUse hook. If refresh_cache's
-                # own mkdir-lock is already held (e.g. a SessionStart async refresh
-                # in flight), it returns immediately (fail-fast, not a stall) —
-                # timeout is a backstop for a genuinely hung ccusage/npx, not the
-                # expected path.
-                # Portable bound (no GNU `timeout` on stock macOS — same gotcha
-                # documented for the gh-auth mutex tests): background the refresh,
-                # run a watchdog that kills it after BURNCHECK_REFRESH_TIMEOUT, wait
-                # for whichever finishes first, then reap the watchdog.
-                bash "$0" refresh_sync >/dev/null 2>/dev/null &
-                bc_refresh_pid=$!
-                ( sleep "$BURNCHECK_REFRESH_TIMEOUT"; kill "$bc_refresh_pid" 2>/dev/null ) &
-                bc_watchdog_pid=$!
-                wait "$bc_refresh_pid" 2>/dev/null
-                kill "$bc_watchdog_pid" 2>/dev/null
-                wait "$bc_watchdog_pid" 2>/dev/null
-                bc_pct=$(get_pct)
+            # Name the binding dimension so the model knows WHICH window is tight.
+            # On a tie the 5-hour window is named: it is the one that clears sooner.
+            bc_dim="7-day"
+            if [ "$U_5H" -ge 0 ] 2>/dev/null && [ "$U_5H" = "$bc_pct" ]; then
+                bc_dim="5-hour"
             fi
 
             band=""
@@ -516,37 +534,40 @@ print(json.dumps({
                     python3 -c "
 import json, sys
 
-pct        = sys.argv[1]
-band       = sys.argv[2]
-cost_limit = sys.argv[3]
-test_mode  = sys.argv[4] == '1'
-prefix     = '[TEST-MODE] ' if test_mode else ''
+pct       = sys.argv[1]
+band      = sys.argv[2]
+dim       = sys.argv[3]
+test_mode = sys.argv[4] == '1'
+prefix    = '[TEST-MODE] ' if test_mode else ''
 
 if band == 'unavailable':
     ctx = (
-        'Usage-guard burn signal UNAVAILABLE — a bounded self-heal refresh was just '
-        'attempted and still failed (ccusage broken, network down, or a refresh lock '
-        'held too long), so this is genuine degradation, not routine cache expiry. '
-        'Flying blind on the 5-hour cap proxy. Before fanning out multi-agent work, '
-        'run: bash ~/.claude/hooks/usage-guard.sh pct to check manually and inspect '
-        'why ccusage is failing. Do not assume headroom.'
+        'Usage-guard burn signal UNAVAILABLE: the local usage cache '
+        '(~/.claude/state/claude-usage.json) is missing, unreadable, or older than '
+        'the staleness limit, so the guard has no rate-limit numbers for this '
+        'dispatch. The guard is FAIL-OPEN: nothing is being blocked on usage right '
+        'now, and that is NOT the same as having headroom. Do not assume headroom. '
+        'Check before fanning out: run bash ~/.claude/hooks/usage-guard.sh pct, or '
+        'read the percentages straight off the statusline.'
     )
-    sysmsg = 'usage-guard: burn signal genuinely UNAVAILABLE — verify manually before fan-out'
+    sysmsg = 'usage-guard: burn signal UNAVAILABLE (usage cache missing/stale): verify before fan-out'
 elif band == 'shift-down':
     ctx = (
-        f'Usage-guard burn signal: ~{pct}% of the \${cost_limit} 5h cap proxy (SHIFT-DOWN band). '
-        'Prefer haiku over sonnet where the task is mechanical, keep fan-out width small, '
-        'avoid opus unless the task is genuinely reasoning-heavy.'
+        f'Usage-guard burn signal: {dim} window at {pct}% of the Claude Code '
+        'metered rate limit (SHIFT-DOWN band). Prefer haiku over sonnet where the '
+        'task is mechanical, keep fan-out width small, and avoid opus unless the '
+        'task is genuinely reasoning-heavy.'
     )
-    sysmsg = f'usage-guard: {pct}% of 5h cap proxy — SHIFT-DOWN band'
+    sysmsg = f'usage-guard: {dim} window at {pct}%: SHIFT-DOWN band'
 else:
     ctx = (
-        f'Usage-guard burn signal: ~{pct}% of the \${cost_limit} 5h cap proxy (FORGE-FIRST band). '
-        'Route bounded, self-contained second-opinion work to the free Forge tier first; '
-        'keep paid delegation to what genuinely needs repo/tool access or is time-critical; '
-        'minimum viable fan-out width only.'
+        f'Usage-guard burn signal: {dim} window at {pct}% of the Claude Code '
+        'metered rate limit (FORGE-FIRST band). Route bounded, self-contained '
+        'second-opinion work to the free Forge tier first; keep paid delegation to '
+        'what genuinely needs repo/tool access or is time-critical; minimum viable '
+        'fan-out width only.'
     )
-    sysmsg = f'usage-guard: {pct}% of 5h cap proxy — FORGE-FIRST band'
+    sysmsg = f'usage-guard: {dim} window at {pct}%: FORGE-FIRST band'
 
 ctx = prefix + ctx
 sysmsg = prefix + sysmsg
@@ -559,7 +580,7 @@ print(json.dumps({
     'systemMessage': sysmsg,
     'suppressOutput': True,
 }))
-" "$bc_pct" "$band" "$COST_LIMIT" "$bc_test_mode" 2>/dev/null
+" "$bc_pct" "$band" "$bc_dim" "$bc_test_mode" 2>/dev/null
                 fi
             fi
         } || true
