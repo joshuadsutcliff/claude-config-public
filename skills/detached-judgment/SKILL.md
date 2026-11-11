@@ -24,5 +24,7 @@ Counter sycophancy and anchoring by explicitly separating "what the user wants t
 ## Output
 A structured block with each step labeled. The separated verdict and final position must be explicit, not buried. Disagreement with the user is acceptable and expected when warranted.
 
+**Characterize from the user's own docs, not the plausible default:** before asserting how something of the user's relates to another thing (same, different, name collision), read the user's adjacent docs FIRST. A claimed name collision was once asserted and then disproven by the user's own doc.
+
 ---
 *Adapted from Compound AI Operating Standards (CC BY 4.0): github.com/cameronpsutcliff/compound-ai-operating-standards.*

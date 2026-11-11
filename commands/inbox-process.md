@@ -39,6 +39,8 @@ Inbox Processing Plan
 
 Ask the user to confirm or redirect any items before proceeding.
 
+**Escape clause:** if the invocation already specifies the disposition for the inbox contents (for example, "tag and archive everything except X"), skip the confirmation gate and proceed directly to Step 3. Report the filing plan as part of the Step 4 completion report instead of presenting it as a question. The user's live instruction outranks this command's default confirmation gate.
+
 ## Step 3: Process Each Item
 
 For each item (after user confirms the plan):

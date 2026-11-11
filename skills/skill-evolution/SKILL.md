@@ -24,6 +24,9 @@ Log when interaction reveals something durable about how the user communicates o
 - Goals that keep showing up beneath unrelated requests (recurring themes across sessions)
 These graduate into persistent memory (`user`/`feedback` types) during the evolution pass — the log is the staging area, memory is the destination.
 
+## Record immediately, approve separately
+Observations are appended to `observations.md` AT THE MOMENT THEY ARE NOTICED, never held in context pending approval. The approval step (below) gates APPLYING changes, not RECORDING observations: write the entry to the file the instant you notice it, then continue. A drafted-but-unlogged observation is a lost observation: a session that drafts entries in conversation and waits to write them "once approved" can end before the write happens, and everything drafted is gone.
+
 ## Evolution pass (trigger: ≥5 unprocessed entries, or user asks)
 
 **Weekly backstop:** regardless of the unprocessed count, the evolution pass
@@ -45,3 +48,4 @@ Before declaring any skill-guided task done: re-read that skill's rules and chec
 - Observations are one line. If it takes a paragraph, it's two observations or an essay — trim it.
 - Don't log preferences the memory system already records; check first.
 - The Delegation Playbook keeps its own ACE loop; delegation lessons go there, not here.
+- Provisional clauses in always-loaded config need an explicit decision owner and expiry date, or they don't enter the core at all. An open-ended "provisional" regenerates the same question every session until someone closes it.
