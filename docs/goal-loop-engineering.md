@@ -52,4 +52,4 @@ guard as the source of truth:
 
 ---
 
-*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff.*
+*Adapted from Compound AI Operating Standards (CC BY 4.0), Cameron Sutcliff: github.com/cameronpsutcliff/compound-ai-operating-standards.*
